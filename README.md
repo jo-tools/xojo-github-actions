@@ -9,7 +9,7 @@ Let's see how to automate the build processes of Xojo built applications with Gi
 Included in this repository:
 - Documentation: [Xojo-GitHub-Actions.pdf](./docs/Xojo-GitHub-Actions.pdf)
 - Source: [Xojo IDE Communicator](./xojo-ide-communicator/)
-- Example Xojo Project: [Xojo-GitHub-Actions.xojo_project](./Xojo-GitHub-Actions)
+- Example Xojo Project: ```Xojo-GitHub-Actions.xojo_project```
 
 Tool used for macOS CodeSigning and Notarization:
 - [Xojo2DMG](https://github.com/jo-tools/xojo2dmg)
