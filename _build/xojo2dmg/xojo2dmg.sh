@@ -223,6 +223,7 @@ SEC_NOTARIZATION=""
 APPLEID=""
 ASCPROVIDER=""
 NOTARIZATION_PASSWORD=""
+NOTARIZATION_IN_GITHUB_ACTIONS=0
 
 if [ "${NOTARIZATION_ENABLED}" = "yes" ]; then
 	NOTARIZATION_PERFORM=1
@@ -238,10 +239,11 @@ if [ "${BUILD_TYPE}" = "release" ]; then
 	if [ $NOTARIZATION_PERFORM -eq 1 ]; then
 		echo "Xojo2DMG: check notarization requirements"
 		if [ ! -z "${NOTARIZATION_ACCOUNT}" ] && [ ! -z "${NOTARIZATION_PROVIDER_SHORTNAME}" ] && [ ! -z "${NOTARIZATION_APPSPECIFIC_PASSWORD}" ]; then
-			echo "Xojo2DMG: check notarization requirements - found ENV"
+			echo "Xojo2DMG: check notarization requirements - found ENV of Github Actions"
 			APPLEID="${NOTARIZATION_ACCOUNT}"
 			ASCPROVIDER="${NOTARIZATION_PROVIDER_SHORTNAME}"
 			NOTARIZATION_PASSWORD="${NOTARIZATION_APPSPECIFIC_PASSWORD}"
+			NOTARIZATION_IN_GITHUB_ACTIONS=1
 		else
 			echo "Xojo2DMG: check notarization requirements - try search keychain"
 			SEC_NOTARIZATION=`security find-generic-password -s ${KEYCHAIN_APP_NOTARIZATION} -g 2>&1`
@@ -758,8 +760,11 @@ if [ $NOTARIZATION_PERFORM -eq 1 ]; then
 	NOTARIZATION_COMPLETED=0
 	echo "Xojo2DMG: Uploading disk image for Notarization... This can take a while..."
 	APP_NOTARIZATION_OUTPUT="${BUILD_LOCATION}/notarization_output.txt"
-	# xcrun altool --notarize-app --type osx --file "${DMG_FINAL}" --primary-bundle-id "${APP_BUNDLE_IDENTIFIER}" --username "${APPLEID}" --password @keychain:"${KEYCHAIN_APP_NOTARIZATION}" --asc-provider "${ASCPROVIDER}" > "${APP_NOTARIZATION_OUTPUT}" 2>&1
-	xcrun altool --notarize-app --type osx --file "${DMG_FINAL}" --primary-bundle-id "${APP_BUNDLE_IDENTIFIER}" --username "${APPLEID}" -p "${NOTARIZATION_PASSWORD}" --asc-provider "${ASCPROVIDER}" > "${APP_NOTARIZATION_OUTPUT}" 2>&1
+	if [ $NOTARIZATION_IN_GITHUB_ACTIONS -eq 1 ]; then
+		xcrun altool --notarize-app --type osx --file "${DMG_FINAL}" --primary-bundle-id "${APP_BUNDLE_IDENTIFIER}" --username "${APPLEID}" -p "${NOTARIZATION_PASSWORD}" --asc-provider "${ASCPROVIDER}" > "${APP_NOTARIZATION_OUTPUT}" 2>&1
+	else
+		xcrun altool --notarize-app --type osx --file "${DMG_FINAL}" --primary-bundle-id "${APP_BUNDLE_IDENTIFIER}" --username "${APPLEID}" --password @keychain:"${KEYCHAIN_APP_NOTARIZATION}" --asc-provider "${ASCPROVIDER}" > "${APP_NOTARIZATION_OUTPUT}" 2>&1
+	fi
 	NOTARIZATION_RESULT=$?
 	sync
 
@@ -782,8 +787,11 @@ if [ $NOTARIZATION_PERFORM -eq 1 ]; then
 		while [ "${NOTARIZATION_STATUS}" = "in progress" ]; do
 			sleep 25
 			echo "Checking status..."
-			# xcrun altool --notarization-info "${REQUESTUUID}" --username "${APPLEID}" --password @keychain:"${KEYCHAIN_APP_NOTARIZATION}" --asc-provider "${ASCPROVIDER}" > "${APP_NOTARIZATION_OUTPUT}" 2>&1
-			xcrun altool --notarization-info "${REQUESTUUID}" --username "${APPLEID}" -p "${NOTARIZATION_PASSWORD}" --asc-provider "${ASCPROVIDER}" > "${APP_NOTARIZATION_OUTPUT}" 2>&1
+			if [ $NOTARIZATION_IN_GITHUB_ACTIONS -eq 1 ]; then
+				xcrun altool --notarization-info "${REQUESTUUID}" --username "${APPLEID}" -p "${NOTARIZATION_PASSWORD}" --asc-provider "${ASCPROVIDER}" > "${APP_NOTARIZATION_OUTPUT}" 2>&1
+			else
+				xcrun altool --notarization-info "${REQUESTUUID}" --username "${APPLEID}" --password @keychain:"${KEYCHAIN_APP_NOTARIZATION}" --asc-provider "${ASCPROVIDER}" > "${APP_NOTARIZATION_OUTPUT}" 2>&1
+			fi
 			NOTARIZATION_RESULT=$?
 			if [ $NOTARIZATION_RESULT -eq 0 ]; then
 				NOTARIZATION_COMPLETED=1
