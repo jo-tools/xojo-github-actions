@@ -13,10 +13,14 @@
 					'**************************************************
 					'Xojo2DMG - How to use with your Xojo-built .app?
 					'**************************************************
-					'1. copy the folder '_build/xojo2dmg' to your project folder.
+					'1. copy the folder 'scripts' to your project folder.
 					'2. create a PostBuild Script, place it after the
 					'   build step and copy-and-paste this one.
-					'3. Read the Comments in the PostBuild Script,
+					'3. If you're using Xojo 2022r1 (or newer): make sure
+					'   this PostBuild Script runs after the Step 'Sign'.
+					'   Otherwise Xojo will overwrite the CodeSigning
+					'   again with it's 'Sign' step.
+					'4. Read the Comments in the PostBuild Script,
 					'   modify according to your needs (DMG Look&Feel,
 					'   CodeSign Entitlements, Notarization).
 					'**************************************************
@@ -49,6 +53,12 @@
 					Case "2"
 					sApp_StageCode = "Beta"
 					End Select
+					
+					'Detect if build is called in a GitHub Actions Workflow
+					Dim bIsGitHubActions As Boolean = EnvironmentVariable("GITHUB_WORKSPACE") <> "" And EnvironmentVariable("FOLDER_BUILDS") <> "" And EnvironmentVariable("FOLDER_BUILDS_MACOS_UNIVERSAL") <> "" And EnvironmentVariable("BUILD_MACOS_UNIVERSAL_POSTBUILD_SHELLSCRIPT") <> ""
+					
+					'If you want to use a folder other than '/scripts', then change this variable
+					Dim sFolderScripts As String = "/_build/xojo2dmg"
 					
 					'if you want to see what's going on in Terminal.app, then set bOpenInTerminal to true
 					'this might be a more helpful output when something goes wrong
@@ -84,7 +94,7 @@
 					sPROJECT_PATH = Mid(sPROJECT_PATH, 1, Len(sPROJECT_PATH)-1)
 					End If
 					Dim sBUILD_LOCATION As String = ReplaceAll(CurrentBuildLocation, "\", "") 'don't escape Path
-					Dim sBUILD_APPNAME As String = CurrentBuildAppName
+					Dim sBUILD_APPNAME As String = CurrentBuildAppName 'Xojo 2022r1 adds .app
 					If (Right(sBUILD_APPNAME, 4) = ".app") Then sBUILD_APPNAME = Left(sBUILD_APPNAME, Len(sBUILD_APPNAME)-4)
 					Dim sBUILD_TYPE As String = "release"
 					If DebugBuild Then sBUILD_TYPE = "debug"
@@ -96,17 +106,17 @@
 					'************************************
 					Dim sDMG_VOLUME_FILENAME As String = Trim(sBUILD_APPNAME + " " + sApp_StageCode)
 					Dim sDMG_VOLUME_TITLE As String = sBUILD_APPNAME + " " + sApp_Version
-					Dim sDMG_VOLUME_ICON As String = sPROJECT_PATH + "/_build/xojo2dmg/resources/volumeicon.icns"
+					Dim sDMG_VOLUME_ICON As String = sPROJECT_PATH + sFolderScripts +"/resources/volumeicon.icns"
 					'Please note: the Images have to be 72DPI!
-					Dim sDMG_BACKGROUND_IMG_1x As String = sPROJECT_PATH + "/_build/xojo2dmg/resources/backgroundImage_1x.png" 'Non-Retina
-					Dim sDMG_BACKGROUND_IMG_2x As String = sPROJECT_PATH + "/_build/xojo2dmg/resources/backgroundImage_2x.png" 'Retina
+					Dim sDMG_BACKGROUND_IMG_1x As String = sPROJECT_PATH + sFolderScripts + "/resources/backgroundImage_1x.png" 'Non-Retina
+					Dim sDMG_BACKGROUND_IMG_2x As String = sPROJECT_PATH + sFolderScripts + "/resources/backgroundImage_2x.png" 'Retina
 					Select Case PropertyValue("App.StageCode")
 					Case "3" 'Final
 					'use the BackgroundImage set just above
 					Else
 					'not a final build - you might want to use a different BackgroundImage that has a 'PreRelease label'
-					'sDMG_BACKGROUND_IMG_1x = sPROJECT_PATH + "/_build/xojo2dmg/resources/backgroundImage_1x.png" 'Non-Retina
-					'sDMG_BACKGROUND_IMG_2x = sPROJECT_PATH + "/_build/xojo2dmg/resources/backgroundImage_2x.png" 'Retina
+					'sDMG_BACKGROUND_IMG_1x = sPROJECT_PATH + sFolderScripts + "/resources/backgroundImage_1x.png" 'Non-Retina
+					'sDMG_BACKGROUND_IMG_2x = sPROJECT_PATH + sFolderScripts + "/resources/backgroundImage_2x.png" 'Retina
 					End Select
 					Dim sDMG_ALIAS_CAPTION As String = "copy 2 Applications" 'how to label the Alias to the Applications folder
 					Dim sDMG_WINDOW_BOUNDS As String = "200, 100, 845, 575" 'position the window, change according to your BackgroundPicture
@@ -114,7 +124,7 @@
 					Dim sDMG_TEXT_SIZE As String = "16"
 					Dim sDMG_ICON_POSITION_APP As String = "160, 315" 'where to position the Icon of your App
 					Dim sDMG_ICON_POSITION_ALIAS As String = "500, 315"'where to position the Icon of the Alias to Applications
-					Dim sDMG_FILE_ICON As String = sPROJECT_PATH + "/_build/xojo2dmg/resources/volumeicon.icns"
+					Dim sDMG_FILE_ICON As String = sPROJECT_PATH + sFolderScripts + "/resources/volumeicon.icns"
 					
 					'*************************
 					'CodeSign with DeveloperID
@@ -133,12 +143,17 @@
 					'use the part that's before the brackets, e.g.:
 					'
 					'Dim sCODESIGN_IDENT As String = "Developer ID Application: YOUR NAME"
-					Dim sCODESIGN_IDENT As String = "Developer ID Application: Juerg Otter"
+					Dim sCODESIGN_IDENT As String = ""
+					
+					If bIsGitHubActions Then
+					Dim sEnvCodesignIdent As String = EnvironmentVariable("CODESIGN_IDENT")
+					If (sEnvCodesignIdent <> "") Then sCODESIGN_IDENT = sEnvCodesignIdent
+					End If
 					
 					'*********************
 					'CodeSign Entitlements
 					'*********************
-					'edit entitlements.plist in /_build/xojo2dmg/resources (e.g. for XojoScript or AppleEvents/Automation)
+					'edit entitlements.plist in scripts/resources (e.g. for XojoScript or AppleEvents/Automation)
 					' - Automation requires true for: com.apple.security.automation.apple-events
 					' - XojoScript requires true for: com.apple.security.cs.allow-jit, com.apple.security.cs.allow-unsigned-executable-memory
 					' - sideloading .dylibs (e.g. via Plugins) might need: com.apple.security.cs.allow-dyld-environment-variables
@@ -152,7 +167,7 @@
 					'For your own app: I suggest to set them all to false first
 					'And only set those to true that you really need
 					
-					Dim sCODESIGN_ENTITLEMENTS As String = sPROJECT_PATH + "/_build/xojo2dmg/resources/entitlements.plist"
+					Dim sCODESIGN_ENTITLEMENTS As String = sPROJECT_PATH + sFolderScripts + "/resources/entitlements.plist"
 					
 					
 					'*********************
@@ -235,7 +250,7 @@
 					Case "1" 'Alpha
 					sNOTARIZE = "no"
 					Case "2" 'Beta
-					sNOTARIZE = "no"
+					sNOTARIZE = "yes"
 					Case "3" 'Final
 					sNOTARIZE = "yes"
 					End Select
@@ -265,7 +280,7 @@
 					If (sCODESIGN_IDENT = "") Then
 					If (sBUILD_TYPE = "release") Then
 					Print "Xojo2DMG: Add the required Variable 'sCODESIGN_IDENT' in the Post Build Step - Xojo2DMGScript in order to enable CodeSigning." + EndOfLine + EndOfLine + "The Script now continues to create a .dmg without CodeSigning (and without Notarization)."
-					Elseif (sDEBUGBUILD_CODESIGN = "yes") Then
+					ElseIf (sDEBUGBUILD_CODESIGN = "yes") Then
 					Print "Xojo2DMG: Add the required Variable 'sCODESIGN_IDENT' in the Post Build Step - Xojo2DMGScript in order to enable CodeSigning." + EndOfLine + EndOfLine + "The Script now continues the DebugRun without CodeSigning."
 					End If
 					End If
@@ -327,13 +342,13 @@
 					sShellArguments.Append(sNOTARIZE)
 					
 					'Make sure the ShellScript is executable:
-					Call DoShellCommand("chmod 755 """ + sPROJECT_PATH + "/_build/xojo2dmg/xojo2dmg.sh""", 0)
+					Call DoShellCommand("chmod 755 """ + sPROJECT_PATH + sFolderScripts + "/xojo2dmg.sh""", 0)
 					
+					
+					If bIsGitHubActions Then
 					' ******************
 					' * GitHub Actions *
 					' ******************
-					Dim bIsGitHubBuild As Boolean = EnvironmentVariable("GITHUB_WORKSPACE") <> "" And EnvironmentVariable("FOLDER_BUILDS") <> "" And EnvironmentVariable("FOLDER_BUILDS_MACOS_UNIVERSAL") <> "" And EnvironmentVariable("BUILD_MACOS_UNIVERSAL_POSTBUILD_SHELLSCRIPT") <> ""
-					If bIsGitHubBuild Then
 					sShellArguments(5) = Trim(sBUILD_APPNAME) 'sDMG_VOLUME_FILENAME without Stage Code in Filename
 					
 					'Write a Shell Script for Xojo2DMG, which will be executed later by a Workflow Job
@@ -344,23 +359,22 @@
 					
 					Call DoShellCommand("echo #!/bin/sh > """ + sGithubActionScript + """")
 					Call DoShellCommand("echo # >> """ + sGithubActionScript + """")
-					Call DoShellCommand("echo " + sQuote + sPROJECT_PATH + "/_build/xojo2dmg/xojo2dmg.sh" + sQuote + " " + sQuote + Join(sShellArguments, sQuote + " " + sQuote) + sQuote + " >> """ + sGithubActionScript + """")
+					Call DoShellCommand("echo " + sQuote + sPROJECT_PATH + sFolderScripts + "/xojo2dmg.sh" + sQuote + " " + sQuote + Join(sShellArguments, sQuote + " " + sQuote) + sQuote + " >> """ + sGithubActionScript + """")
 					
 					Call DoShellCommand("chmod 755  """ + sGithubActionScript + """")
 					
-					// https://docs.github.com/en/actions/deployment/deploying-xcode-applications/installing-an-apple-certificate-on-macos-runners-for-xcode-development
-					// https://localazy.com/blog/how-to-automatically-sign-macos-apps-using-github-actions
+					' ***************************
+					' * GitHub Actions end here *
+					' ***************************
+					' Shell Script will be called in a workflow step
 					Return
 					End If
 					
-					' ********************
-					' * No GitHub Action *
-					' ********************
 					If (Not DebugBuild) And bOpenInTerminal Then
 					'Automate Terminal:
 					'Pass ShellArguments to Script and execute it in Terminal.app
 					Call DoShellCommand("osascript -e 'tell application ""Terminal"" to activate'", 0)
-					Call DoShellCommand("osascript -e 'tell application ""Terminal"" to do script ""\""" + sPROJECT_PATH + "/_build/xojo2dmg/xojo2dmg.sh\"" \""" + Join(sShellArguments, "\"" \""") + "\""""'", 0)
+					Call DoShellCommand("osascript -e 'tell application ""Terminal"" to do script ""\""" + sPROJECT_PATH + sFolderScripts + "/xojo2dmg.sh\"" \""" + Join(sShellArguments, "\"" \""") + "\""""'", 0)
 					Return 'see progress and errors in Terminal.app
 					End If
 					
@@ -369,7 +383,7 @@
 					'and showing a Spinning Wheel if this is taking a long time
 					Dim sShellResult As String
 					Dim iShellResult As Integer
-					sShellResult = DoShellCommand("""" + sPROJECT_PATH + "/_build/xojo2dmg/xojo2dmg.sh"" """ + Join(sShellArguments, """ """) + """", 0, iShellResult)
+					sShellResult = DoShellCommand("""" + sPROJECT_PATH + sFolderScripts + "/xojo2dmg.sh"" """ + Join(sShellArguments, """ """) + """", 0, iShellResult)
 					
 					'Process and Parse the output of the ShellScript
 					Dim sXojo2CodeSignErrors() As String
