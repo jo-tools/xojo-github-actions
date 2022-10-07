@@ -114,8 +114,8 @@ env:
   BUILD_LINUX_X86_32BIT_TGZ_NAME: XojoGitHubActions_Linux_x86-32bit.tgz
   BUILD_LINUX_X86_64BIT_TGZ_NAME: XojoGitHubActions_Linux_x86-64bit.tgz
   BUILD_MACOS_UNIVERSAL_POSTBUILD_SHELLSCRIPT: call_xojo2dmg.sh
-  BUILD_MACOS_UNIVERSAL_DMG_NAME: XojoGitHubActions.dmg
-  BUILD_MACOS_UNIVERSAL_ZIP_NAME: XojoGitHubActions.zip
+  BUILD_MACOS_UNIVERSAL_DMG_NAME: Xojo GitHub Actions.dmg
+  BUILD_MACOS_UNIVERSAL_ZIP_NAME: Xojo GitHub Actions.zip
   BUILD_WINDOWS_APP_FOLDER_NAME: Xojo GitHub Actions
   BUILD_WINDOWS_X86_32BIT_ZIP_NAME: XojoGitHubActions_Windows_x86-32bit.zip
   BUILD_WINDOWS_X86_64BIT_ZIP_NAME: XojoGitHubActions_Windows_x86-64bit.zip
