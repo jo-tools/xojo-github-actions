@@ -1,0 +1,56 @@
+name: Beta Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  setup:
+    name: Setup GitHub Workspace
+    runs-on: [self-hosted, macOS, Xojo]
+    outputs:
+      artifacts-retention-days: ${{ steps.setVariables.outputs.artifacts-retention-days }}
+    steps:
+      - name: Cleanup GitHub Workspace
+        run: |
+          rm -rf "${{ github.workspace }}"
+          sync
+          mkdir -p "${{ github.workspace }}"
+      - name: Check out Repository
+        uses: actions/checkout@v3
+      - name: Setup Variables
+        id: setVariables
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "::set-output name=artifacts-retention-days::2"
+          fi
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "::set-output name=artifacts-retention-days::7"
+          fi
+  xojo:
+    name: Xojo
+    uses: ./.github/workflows/xojo.yaml
+    needs: setup
+    with:
+      build-windows-x86-32bit: true
+      build-windows-x86-64bit: true
+      build-linux-x86-32bit: true
+      build-linux-x86-64bit: true
+      build-macos-universal: true
+      build-stage-code: beta
+      artifacts-retention-days: ${{ needs.setup.outputs.artifacts-retention-days }}
+    secrets:
+      MACOS_CODESIGN_IDENT: ${{ secrets.MACOS_CODESIGN_IDENT }}
+      MACOS_CODESIGN_CERTIFICATE: ${{ secrets.MACOS_CODESIGN_CERTIFICATE }}
+      MACOS_CODESIGN_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CODESIGN_CERTIFICATE_PASSWORD }}
+      MACOS_CODESIGN_KEYCHAIN_PASSWORD: ${{ secrets.MACOS_CODESIGN_KEYCHAIN_PASSWORD }}
+      MACOS_NOTARIZATION_ACCOUNT: ${{ secrets.MACOS_NOTARIZATION_ACCOUNT }}
+      MACOS_NOTARIZATION_PROVIDER_SHORTNAME: ${{ secrets.MACOS_NOTARIZATION_PROVIDER_SHORTNAME }}
+      MACOS_NOTARIZATION_APPSPECIFIC_PASSWORD: ${{ secrets.MACOS_NOTARIZATION_APPSPECIFIC_PASSWORD }}
+      WINDOWS_CODESIGN_CERTIFICATE: ${{ secrets.WINDOWS_CODESIGN_CERTIFICATE }}
+      WINDOWS_CODESIGN_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}

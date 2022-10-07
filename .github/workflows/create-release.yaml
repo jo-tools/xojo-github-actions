@@ -1,0 +1,177 @@
+name: Create Release
+
+on:
+    workflow_dispatch:
+      branches:
+        - main
+
+env:
+  XOJO_PROJECT_FILE: Xojo-GitHub-Actions.xojo_project
+
+jobs:
+  project-version:
+    name: Project Version
+    runs-on: [self-hosted, macOS, Xojo]
+    outputs:
+      version-tag: ${{ steps.project-version.outputs.version-tag }}
+    steps:
+      - name: Cleanup Github Workspace
+        run: |
+          rm -rf "${{ github.workspace }}"
+          sync
+          mkdir -p "${{ github.workspace }}"
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Get Xojo Project Version
+        id: project-version
+        run: |
+          VERSION_MAJOR=$(grep -o "MajorVersion=.*" "${{ github.workspace }}/${{ env.XOJO_PROJECT_FILE }}" | awk -F'=' '{print $2}')
+          VERSION_MINOR=$(grep -o "MinorVersion=.*" "${{ github.workspace }}/${{ env.XOJO_PROJECT_FILE }}" | awk -F'=' '{print $2}')
+          VERSION_SUB=$(grep -o "SubVersion=.*" "${{ github.workspace }}/${{ env.XOJO_PROJECT_FILE }}" | awk -F'=' '{print $2}')
+          VERSION=$VERSION_MAJOR.$VERSION_MINOR.$VERSION_SUB
+          VERSION_TAG=v.$VERSION
+          echo "Xojo Project Version: $VERSION"
+          echo "Version Tag: $VERSION_TAG"
+          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
+          echo "::set-output name=version-tag::$VERSION_TAG"
+      - name: Check Release Version Tag
+        id: github-tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            try {
+              console.log('Check: Expect that Tag ${{ env.VERSION_TAG }} does not exist');
+              const getRefResponse = await github.rest.git.getRef({
+                owner: context.repo.owner,
+                ref: "tags/${{ env.VERSION_TAG }}",
+                repo: context.repo.repo,
+              });
+              // console.log(getRefResponse);
+              if (getRefResponse.status === 200) {
+                console.log('Tag ${{ env.VERSION_TAG }} exists');
+                core.setFailed('Tag ${{ env.VERSION_TAG }} already exists. Xojo Project Version needs to be changed.');
+              } else {
+                console.log('Tag ${{ env.VERSION_TAG }} does not exist');
+              }
+            } catch(error) {
+              console.log('Tag ${{ env.VERSION_TAG }} does not exist');
+            }
+
+  xojo:
+    name: Xojo
+    uses: ./.github/workflows/xojo.yaml
+    needs: project-version
+    with:
+      build-windows-x86-32bit: true
+      build-windows-x86-64bit: true
+      build-linux-x86-32bit: true
+      build-linux-x86-64bit: true
+      build-macos-universal: true
+      build-stage-code: final
+      artifacts-retention-days: 7
+    secrets:
+      MACOS_CODESIGN_IDENT: ${{ secrets.MACOS_CODESIGN_IDENT }}
+      MACOS_CODESIGN_CERTIFICATE: ${{ secrets.MACOS_CODESIGN_CERTIFICATE }}
+      MACOS_CODESIGN_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CODESIGN_CERTIFICATE_PASSWORD }}
+      MACOS_CODESIGN_KEYCHAIN_PASSWORD: ${{ secrets.MACOS_CODESIGN_KEYCHAIN_PASSWORD }}
+      MACOS_NOTARIZATION_ACCOUNT: ${{ secrets.MACOS_NOTARIZATION_ACCOUNT }}
+      MACOS_NOTARIZATION_PROVIDER_SHORTNAME: ${{ secrets.MACOS_NOTARIZATION_PROVIDER_SHORTNAME }}
+      MACOS_NOTARIZATION_APPSPECIFIC_PASSWORD: ${{ secrets.MACOS_NOTARIZATION_APPSPECIFIC_PASSWORD }}
+      WINDOWS_CODESIGN_CERTIFICATE: ${{ secrets.WINDOWS_CODESIGN_CERTIFICATE }}
+      WINDOWS_CODESIGN_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}
+
+  create-release:
+    name: Create Release
+    runs-on: [self-hosted, macOS, Xojo]
+    needs: [project-version, xojo]
+    steps:
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ needs.project-version.outputs.version-tag }}
+          release_name: ${{ needs.project-version.outputs.version-tag }}
+          draft: false
+          prerelease: false
+      - name: Upload Linux 32Bit .tgz release asset
+        if: ${{ needs.xojo.outputs.build-linux-x86-32bit == 'done'}}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_name: ${{ needs.xojo.outputs.build-linux-x86-32bit-tgz-name }}
+          asset_path: ${{ needs.xojo.outputs.build-linux-x86-32bit-tgz-asset }}
+          asset_content_type: application/tgz
+      - name: Upload Linux 64Bit .tgz release asset
+        if: ${{ needs.xojo.outputs.build-linux-x86-64bit == 'done'}}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_name: ${{ needs.xojo.outputs.build-linux-x86-64bit-tgz-name }}
+          asset_path: ${{ needs.xojo.outputs.build-linux-x86-64bit-tgz-asset }}
+          asset_content_type: application/tgz
+      - name: Upload Windows 32Bit .zip release asset
+        if: ${{ needs.xojo.outputs.build-windows-x86-32bit == 'done'}}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_name: ${{ needs.xojo.outputs.build-windows-x86-32bit-zip-name }}
+          asset_path: ${{ needs.xojo.outputs.build-windows-x86-32bit-zip-asset }}
+          asset_content_type: application/zip
+      - name: Upload Windows 32Bit setup release asset
+        if: ${{ needs.xojo.outputs.build-windows-x86-32bit == 'done'}}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_name: ${{ needs.xojo.outputs.build-windows-x86-32bit-setup-name }}
+          asset_path: ${{ needs.xojo.outputs.build-windows-x86-32bit-setup-asset }}
+          asset_content_type: application/x-msdownload
+      - name: Upload Windows 64Bit .zip release asset
+        if: ${{ needs.xojo.outputs.build-windows-x86-64bit == 'done'}}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_name: ${{ needs.xojo.outputs.build-windows-x86-64bit-zip-name }}
+          asset_path: ${{ needs.xojo.outputs.build-windows-x86-64bit-zip-asset }}
+          asset_content_type: application/zip
+      - name: Upload Windows 64Bit setup release asset
+        if: ${{ needs.xojo.outputs.build-windows-x86-64bit == 'done'}}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_name: ${{ needs.xojo.outputs.build-windows-x86-64bit-setup-name }}
+          asset_path: ${{ needs.xojo.outputs.build-windows-x86-64bit-setup-asset }}
+          asset_content_type: application/x-msdownload
+      - name: Upload macOS Universal .dmg release asset
+        if: ${{ needs.xojo.outputs.build-macos-universal == 'done'}}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_name: ${{ needs.xojo.outputs.build-macos-universal-dmg-name }}
+          asset_path: ${{ needs.xojo.outputs.build-macos-universal-dmg-asset }}
+          asset_content_type: application/octet-stream
+      - name: Upload macOS Universal .zip release asset
+        if: ${{ needs.xojo.outputs.build-macos-universal == 'done'}}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_name: ${{ needs.xojo.outputs.build-macos-universal-zip-name }}
+          asset_path: ${{ needs.xojo.outputs.build-macos-universal-zip-asset }}
+          asset_content_type: application/zip
