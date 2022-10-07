@@ -1,9 +1,9 @@
 name: Create Release
 
 on:
-    workflow_dispatch:
-      branches:
-        - main
+  workflow_dispatch:
+    branches:
+      - main
 
 env:
   XOJO_PROJECT_FILE: Xojo-GitHub-Actions.xojo_project
