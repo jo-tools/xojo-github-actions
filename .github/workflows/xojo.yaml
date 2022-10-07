@@ -318,7 +318,7 @@ jobs:
             ${{ env.BUILD_WINDOWS_X86_64BIT_INNOSETUPSCRIPT }}
             ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}
           if-no-files-found: error
-# Note: This step is set to run always. That's because if Windows is not being built, the above step 'postbuild-windows'
+# Note: This step is set to run always. That's because if Windows is not being built, the above job 'postbuild-windows'
 #       won't be executed (on a virtual windows machine). Conditional 'needs' are not available. That's why we're going
 #       to check successful build outputs and fail if necessary in those checks.
   publish-artifacts:
