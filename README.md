@@ -17,7 +17,7 @@ Included in this repository:
   - [GitHub Actions Workflows](./.github/workflows/)
     - Beta Build
     - Create Release
-    - a resuable Workflow to build Xojo applications
+    - Xojo *(a resuable Workflow to build Xojo applications*)
 
 ### ScreenShots
 Beta Build on Pull Request:  
