@@ -1,0 +1,437 @@
+name: Xojo
+
+on:
+  workflow_call:
+    inputs:
+      build-windows-x86-32bit:
+        required: false
+        type: boolean
+        default: false
+      build-windows-x86-64bit:
+        required: false
+        type: boolean
+        default: false
+      build-linux-x86-32bit:
+        required: false
+        type: boolean
+        default: false
+      build-linux-x86-64bit:
+        required: false
+        type: boolean
+        default: false
+      build-macos-universal:
+        required: false
+        type: boolean
+        default: false
+      build-stage-code:
+        required: true
+        type: string
+        default: beta
+      artifacts-retention-days:
+        required: true
+        type: string
+        default: 1
+    secrets:
+      MACOS_CODESIGN_IDENT:
+        required: true
+      MACOS_CODESIGN_CERTIFICATE:
+        required: true
+      MACOS_CODESIGN_CERTIFICATE_PASSWORD:
+        required: true
+      MACOS_CODESIGN_KEYCHAIN_PASSWORD:
+        required: true
+      MACOS_NOTARIZATION_ACCOUNT:
+        required: true
+      MACOS_NOTARIZATION_PROVIDER_SHORTNAME:
+        required: true
+      MACOS_NOTARIZATION_APPSPECIFIC_PASSWORD:
+        required: true
+      WINDOWS_CODESIGN_CERTIFICATE:
+        required: true
+      WINDOWS_CODESIGN_CERTIFICATE_PASSWORD:
+        required: true
+    outputs:
+      build-linux-x86-32bit:
+        value: ${{ jobs.publish-artifacts.outputs.build-linux-x86-32bit }}
+      build-linux-x86-32bit-tgz-name:
+        value: ${{ jobs.publish-artifacts.outputs.build-linux-x86-32bit-tgz-name }}
+      build-linux-x86-32bit-tgz-asset:
+        value: ${{ jobs.publish-artifacts.outputs.build-linux-x86-32bit-tgz-asset }}
+      build-linux-x86-64bit:
+        value: ${{ jobs.publish-artifacts.outputs.build-linux-x86-64bit }}
+      build-linux-x86-64bit-tgz-name:
+        value: ${{ jobs.publish-artifacts.outputs.build-linux-x86-64bit-tgz-name }}
+      build-linux-x86-64bit-tgz-asset:
+        value: ${{ jobs.publish-artifacts.outputs.build-linux-x86-64bit-tgz-asset }}
+      build-windows-x86-32bit:
+        value: ${{ jobs.publish-artifacts.outputs.build-windows-x86-32bit }}
+      build-windows-x86-32bit-zip-name:
+        value: ${{ jobs.publish-artifacts.outputs.build-windows-x86-32bit-zip-name }}
+      build-windows-x86-32bit-zip-asset:
+        value: ${{ jobs.publish-artifacts.outputs.build-windows-x86-32bit-zip-asset }}
+      build-windows-x86-32bit-setup-name:
+        value: ${{ jobs.publish-artifacts.outputs.build-windows-x86-32bit-setup-name }}
+      build-windows-x86-32bit-setup-asset:
+        value: ${{ jobs.publish-artifacts.outputs.build-windows-x86-32bit-setup-asset }}
+      build-windows-x86-64bit:
+        value: ${{ jobs.publish-artifacts.outputs.build-windows-x86-64bit }}
+      build-windows-x86-64bit-zip-name:
+        value: ${{ jobs.publish-artifacts.outputs.build-windows-x86-64bit-zip-name }}
+      build-windows-x86-64bit-zip-asset:
+        value: ${{ jobs.publish-artifacts.outputs.build-windows-x86-64bit-zip-asset }}
+      build-windows-x86-64bit-setup-name:
+        value: ${{ jobs.publish-artifacts.outputs.build-windows-x86-64bit-setup-name }}
+      build-windows-x86-64bit-setup-asset:
+        value: ${{ jobs.publish-artifacts.outputs.build-windows-x86-64bit-setup-asset }}
+      build-macos-universal:
+        value: ${{ jobs.publish-artifacts.outputs.build-macos-universal }}
+      build-macos-universal-dmg-name:
+        value: ${{ jobs.publish-artifacts.outputs.build-macos-universal-dmg-name }}
+      build-macos-universal-dmg-asset:
+        value: ${{ jobs.publish-artifacts.outputs.build-macos-universal-dmg-asset }}
+      build-macos-universal-zip-name:
+        value: ${{ jobs.publish-artifacts.outputs.build-macos-universal-zip-name }}
+      build-macos-universal-zip-asset:
+        value: ${{ jobs.publish-artifacts.outputs.build-macos-universal-zip-asset }}
+
+env:
+  XOJO_AUTOMATION: TRUE
+  XOJO_IPCPATH: Xojo2022r2
+  XOJO_IDE_APP: /Applications/Xojo/Xojo 2022 Release 2/Xojo 2022r2.app
+  XOJO_IDE_COMMUNICATOR: /Applications/Xojo/XojoIDECommunicator/XojoIDECommunicator
+  XOJO_IDE_COMMUNICATOR_SLEEP: 15
+  XOJO_IDE_LAUNCH_SLEEP: 40
+  XOJO_PROJECT_FILE: Xojo-GitHub-Actions.xojo_project
+  XOJO_IDESCRIPT_PREBUILD: _build/prebuild.xojo_script
+  FOLDER_BUILDS: Builds - Xojo-GitHub-Actions
+  FOLDER_BUILDS_WINDOWS_X86_32BIT: Windows
+  FOLDER_BUILDS_WINDOWS_X86_64BIT: Windows 64 bit
+  FOLDER_BUILDS_LINUX_X86_32BIT: Linux
+  FOLDER_BUILDS_LINUX_X86_64BIT: Linux 64 bit
+  FOLDER_BUILDS_MACOS_UNIVERSAL: macOS Universal
+  BUILD_LINUX_POSTBUILDSCRIPT: _build/linux/postbuild.sh
+  BUILD_LINUX_APP_FOLDER_NAME: Xojo GitHub Actions
+  BUILD_LINUX_X86_32BIT_TGZ_NAME: XojoGitHubActions_Linux_x86-32bit.tgz
+  BUILD_LINUX_X86_64BIT_TGZ_NAME: XojoGitHubActions_Linux_x86-64bit.tgz
+  BUILD_MACOS_UNIVERSAL_POSTBUILD_SHELLSCRIPT: call_xojo2dmg.sh
+  BUILD_MACOS_UNIVERSAL_DMG_NAME: Xojo GitHub Actions.dmg
+  BUILD_MACOS_UNIVERSAL_ZIP_NAME: Xojo GitHub Actions.zip
+  BUILD_WINDOWS_APP_FOLDER_NAME: Xojo GitHub Actions
+  BUILD_WINDOWS_X86_32BIT_ZIP_NAME: XojoGitHubActions_Windows_x86-32bit.zip
+  BUILD_WINDOWS_X86_64BIT_ZIP_NAME: XojoGitHubActions_Windows_x86-64bit.zip
+  BUILD_WINDOWS_X86_32BIT_CODESIGNSCRIPT: _build/windows/codesign_x86-32bit.ps1
+  BUILD_WINDOWS_X86_64BIT_CODESIGNSCRIPT: _build/windows/codesign_x86-64bit.ps1
+  BUILD_WINDOWS_X86_32BIT_INNOSETUPSCRIPT: _build/windows/innosetup_x86-32bit.iss
+  BUILD_WINDOWS_X86_64BIT_INNOSETUPSCRIPT: _build/windows/innosetup_x86-64bit.iss
+  BUILD_WINDOWS_X86_32BIT_SETUP_NAME: Setup_XojoGitHubActions_Windows_x86-32bit.exe
+  BUILD_WINDOWS_X86_64BIT_SETUP_NAME: Setup_XojoGitHubActions_Windows_x86-64bit.exe
+
+jobs:
+  build:
+    name: Build
+    runs-on: [self-hosted, macOS, Xojo]
+    env:
+      BUILD_STAGE_CODE: ${{ inputs.build-stage-code }}
+      CODESIGN_IDENT: ${{ secrets.MACOS_CODESIGN_IDENT }}
+    steps:
+      - name: Launch Xojo
+        run: |
+          open "${{ env.XOJO_IDE_APP }}"
+      - name: Wait for the Xojo IDE to become ready
+        run: |
+          sleep ${{ env.XOJO_IDE_LAUNCH_SLEEP }}
+      - name: IDE Communicator - PreBuild
+        run: |
+          echo "StageCode Inputs: ${{ inputs.build-stage-code }}"
+          echo "StageCode Env: ${{ env.BUILD_STAGE_CODE }}"
+          sleep ${{ env.XOJO_IDE_COMMUNICATOR_SLEEP }}
+          ${{ env.XOJO_IDE_COMMUNICATOR }} -x ${{ env.XOJO_IPCPATH }} ./${{ env.XOJO_IDESCRIPT_PREBUILD }}
+      - name: IDE Communicator - Build Windows x86 32Bit
+        if: ${{ inputs.build-windows-x86-32bit == true }}
+        run: |
+          sleep ${{ env.XOJO_IDE_COMMUNICATOR_SLEEP }}
+          ${{ env.XOJO_IDE_COMMUNICATOR }} -x ${{ env.XOJO_IPCPATH }} -i "Print BuildApp(3)"
+      - name: IDE Communicator - Build Windows x86 64Bit
+        if: ${{ inputs.build-windows-x86-64bit == true }}
+        run: |
+          sleep ${{ env.XOJO_IDE_COMMUNICATOR_SLEEP }}
+          ${{ env.XOJO_IDE_COMMUNICATOR }} -x ${{ env.XOJO_IPCPATH }} -i "Print BuildApp(19)"
+      - name: IDE Communicator - Build Linux x86 32Bit
+        if: ${{ inputs.build-linux-x86-32bit == true }}
+        run: |
+          sleep ${{ env.XOJO_IDE_COMMUNICATOR_SLEEP }}
+          ${{ env.XOJO_IDE_COMMUNICATOR }} -x ${{ env.XOJO_IPCPATH }} -i "Print BuildApp(4)"
+      - name: IDE Communicator - Build Linux x86 64Bit
+        if: ${{ inputs.build-linux-x86-64bit == true }}
+        run: |
+          sleep ${{ env.XOJO_IDE_COMMUNICATOR_SLEEP }}
+          ${{ env.XOJO_IDE_COMMUNICATOR }} -x ${{ env.XOJO_IPCPATH }} -i "Print BuildApp(17)"
+      - name: IDE Communicator - Build macOS Universal x86 64Bit, ARM 64Bit
+        if: ${{ inputs.build-macos-universal == true }}
+        run: |
+          sleep ${{ env.XOJO_IDE_COMMUNICATOR_SLEEP }}
+          ${{ env.XOJO_IDE_COMMUNICATOR }} -x ${{ env.XOJO_IPCPATH }} -i "Print BuildApp(9)"
+      - name: Quit Xojo IDE
+        if: ${{ always() }}
+        run: |
+          sleep ${{ env.XOJO_IDE_COMMUNICATOR_SLEEP }}
+          ${{ env.XOJO_IDE_COMMUNICATOR }} -x ${{ env.XOJO_IPCPATH }} -i "QuitIDE(False)"
+  postbuild:
+    name: Post Build
+    runs-on: [self-hosted, macOS, Xojo]
+    needs: build
+    steps:
+      - name: Post Build - Linux x86 32Bit
+        if: ${{ inputs.build-linux-x86-32bit == true }}
+        run: |
+          chmod 755 ./${{ env.BUILD_LINUX_POSTBUILDSCRIPT }}
+          ./${{ env.BUILD_LINUX_POSTBUILDSCRIPT }} "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_32BIT }}" "${{ env.BUILD_LINUX_APP_FOLDER_NAME }}" "${{ env.BUILD_LINUX_X86_32BIT_TGZ_NAME }}"
+      - name: Post Build - Linux x86 64Bit
+        if: ${{ inputs.build-linux-x86-64bit == true }}
+        run: |
+          chmod 755 ./${{ env.BUILD_LINUX_POSTBUILDSCRIPT }}
+          ./${{ env.BUILD_LINUX_POSTBUILDSCRIPT }} "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_64BIT }}" "${{ env.BUILD_LINUX_APP_FOLDER_NAME }}" "${{ env.BUILD_LINUX_X86_64BIT_TGZ_NAME }}"
+      - name: Post Build - macOS Universal x86 64Bit, ARM 64Bit
+        if: ${{ inputs.build-macos-universal == true }}
+        env:
+          CODESIGN_IDENT: ${{ secrets.MACOS_CODESIGN_IDENT }}
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.MACOS_CODESIGN_CERTIFICATE }}
+          P12_PASSWORD: ${{ secrets.MACOS_CODESIGN_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.MACOS_CODESIGN_KEYCHAIN_PASSWORD }}
+          NOTARIZATION_ACCOUNT: ${{ secrets.MACOS_NOTARIZATION_ACCOUNT }}
+          NOTARIZATION_PROVIDER_SHORTNAME: ${{ secrets.MACOS_NOTARIZATION_PROVIDER_SHORTNAME }}
+          NOTARIZATION_APPSPECIFIC_PASSWORD: ${{ secrets.MACOS_NOTARIZATION_APPSPECIFIC_PASSWORD }}
+        run: |
+          # create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # import certificate and provisioning profile from secrets
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode --output $CERTIFICATE_PATH
+
+          # create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+          
+          # Xojo2DMG
+          chmod 755 ./"${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_POSTBUILD_SHELLSCRIPT }}"
+          ./"${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_POSTBUILD_SHELLSCRIPT }}"
+      - name: Clean up Build Keychain
+        if: ${{ always() && inputs.build-macos-universal == true }}
+        run: |
+          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
+      - name: Upload Xojo Builds for Windows x86 32Bit
+        uses: actions/upload-artifact@v3
+        if: ${{ inputs.build-windows-x86-32bit == true }}
+        with:
+          name: XojoBuilds-TargetWindows
+          retention-days: 1
+          path: |
+            ${{ env.BUILD_WINDOWS_X86_32BIT_CODESIGNSCRIPT }}
+            ${{ env.BUILD_WINDOWS_X86_32BIT_INNOSETUPSCRIPT }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}
+          if-no-files-found: error
+      - name: Upload Xojo Builds for Windows x86 64Bit
+        uses: actions/upload-artifact@v3
+        if: ${{ inputs.build-windows-x86-64bit == true }}
+        with:
+          name: XojoBuilds-TargetWindows
+          retention-days: 1
+          path: |
+            ${{ env.BUILD_WINDOWS_X86_64BIT_CODESIGNSCRIPT }}
+            ${{ env.BUILD_WINDOWS_X86_64BIT_INNOSETUPSCRIPT }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}
+          if-no-files-found: error
+  postbuild-windows:
+    name: Post Build Windows
+    runs-on: windows-latest
+    needs: [build, postbuild]
+    if: ${{ inputs.build-windows-x86-32bit == true || inputs.build-windows-x86-64bit == true }}
+    env:
+      SIGNTOOL_EXE: C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe
+      SIGNTOOL_EXE_CMD: C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool.exe
+      CERTIFICATE_PFX: certificate\certificate.pfx
+      TIMESTAMP_SERVER: http://timestamp.digicert.com
+    steps:
+      - name: Download Xojo Builds for TargetWindows
+        uses: actions/download-artifact@v3
+        with:
+          name: XojoBuilds-TargetWindows
+      - name: Create Code Signing Certificate
+        shell: powershell
+        run: |
+          New-Item -ItemType directory -Path certificate
+          Set-Content -Path certificate\certificate.txt -Value '${{ secrets.WINDOWS_CODESIGN_CERTIFICATE }}'
+          certutil -decode certificate\certificate.txt ${{ env.CERTIFICATE_PFX }}
+      - name: Code Sign 32Bit Executable and DLLs
+        if: ${{ inputs.build-windows-x86-32bit == true }}
+        shell: powershell
+        run: |
+          & "${{ env.BUILD_WINDOWS_X86_32BIT_CODESIGNSCRIPT }}" "${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}"
+      - name: Create ZIP of 32Bit Executable
+        if: ${{ inputs.build-windows-x86-32bit == true }}
+        shell: powershell
+        run: |
+          Compress-Archive -Path "${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}\${{ env.BUILD_WINDOWS_APP_FOLDER_NAME }}" -DestinationPath "${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}\${{ env.BUILD_WINDOWS_X86_32BIT_ZIP_NAME }}"
+      - name: Create Installer of 32Bit Executable
+        if: ${{ inputs.build-windows-x86-32bit == true }}
+        shell: powershell
+        run: |
+          & "${env:ProgramFiles(x86)}/Inno Setup 6/iscc.exe" "/SCodeSignSHA1=${{ env.SIGNTOOL_EXE_CMD }} sign /f `"${{ github.workspace }}\${{ env.CERTIFICATE_PFX }}`" /p `"${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}`" /fd sha1 /t ${{ env.TIMESTAMP_SERVER }} /v `$f" "/SCodeSignSHA256=${{ env.SIGNTOOL_EXE_CMD }} sign /as /f `"${{ github.workspace }}\${{ env.CERTIFICATE_PFX }}`" /p `"${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}`" /fd sha256 /tr ${{ env.TIMESTAMP_SERVER }} /td sha256 /v `$f" /O"${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}" /Dsourcepath="${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}\${{ env.BUILD_WINDOWS_APP_FOLDER_NAME }}" "${{ github.workspace }}\_build\windows\innosetup_x86-32bit.iss"
+      - name: Code Sign 64Bit Executable and DLLs
+        if: ${{ inputs.build-windows-x86-64bit == true }}
+        shell: powershell
+        run: |
+          & "${{ env.BUILD_WINDOWS_X86_64BIT_CODESIGNSCRIPT }}" "${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}"
+      - name: Create ZIP of 64Bit Executable
+        if: ${{ inputs.build-windows-x86-64bit == true }}
+        shell: powershell
+        run: |
+          Compress-Archive -Path "${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}\${{ env.BUILD_WINDOWS_APP_FOLDER_NAME }}" -DestinationPath "${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}\${{ env.BUILD_WINDOWS_X86_64BIT_ZIP_NAME }}"
+      - name: Create Installer of 64Bit Executable
+        if: ${{ inputs.build-windows-x86-64bit == true }}
+        shell: powershell
+        run: |
+          & "${env:ProgramFiles(x86)}/Inno Setup 6/iscc.exe" "/SCodeSignSHA1=${{ env.SIGNTOOL_EXE_CMD }} sign /f `"${{ github.workspace }}\${{ env.CERTIFICATE_PFX }}`" /p `"${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}`" /fd sha1 /t ${{ env.TIMESTAMP_SERVER }} /v `$f" "/SCodeSignSHA256=${{ env.SIGNTOOL_EXE_CMD }} sign /as /f `"${{ github.workspace }}\${{ env.CERTIFICATE_PFX }}`" /p `"${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}`" /fd sha256 /tr ${{ env.TIMESTAMP_SERVER }} /td sha256 /v `$f" /O"${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}" /Dsourcepath="${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}\${{ env.BUILD_WINDOWS_APP_FOLDER_NAME }}" "${{ github.workspace }}\_build\windows\innosetup_x86-64bit.iss"
+      - name: Upload Xojo Builds for Windows x86 32Bit
+        uses: actions/upload-artifact@v3
+        if: ${{ inputs.build-windows-x86-32bit == true }}
+        with:
+          name: XojoBuilds-TargetWindows
+          retention-days: 1
+          path: |
+            ${{ env.BUILD_WINDOWS_X86_32BIT_INNOSETUPSCRIPT }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}
+          if-no-files-found: error
+      - name: Upload Xojo Builds for Windows x86 64Bit
+        uses: actions/upload-artifact@v3
+        if: ${{ inputs.build-windows-x86-64bit == true }}
+        with:
+          name: XojoBuilds-TargetWindows
+          retention-days: 1
+          path: |
+            ${{ env.BUILD_WINDOWS_X86_64BIT_INNOSETUPSCRIPT }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}
+          if-no-files-found: error
+# Note: This step is set to run always. That's because if Windows is not being built, the above job 'postbuild-windows'
+#       won't be executed (on a virtual windows machine). Conditional 'needs' are not available. That's why we're going
+#       to check successful build outputs and fail if necessary in those checks.
+  publish-artifacts:
+    name: Publish Artifacts
+    runs-on: [self-hosted, macOS, Xojo]
+    needs: [build, postbuild, postbuild-windows]
+    if: always()
+    outputs:
+      build-linux-x86-32bit: ${{ steps.check-build-output-linux-x86-32bit.outputs.build-linux-x86-32bit }}
+      build-linux-x86-32bit-tgz-name: ${{ steps.check-build-output-linux-x86-32bit.outputs.build-linux-x86-32bit-tgz-name }}
+      build-linux-x86-32bit-tgz-asset: ${{ steps.check-build-output-linux-x86-32bit.outputs.build-linux-x86-32bit-tgz-asset }}
+      build-linux-x86-64bit: ${{ steps.check-build-output-linux-x86-64bit.outputs.build-linux-x86-64bit }}
+      build-linux-x86-64bit-tgz-name: ${{ steps.check-build-output-linux-x86-64bit.outputs.build-linux-x86-64bit-tgz-name }}
+      build-linux-x86-64bit-tgz-asset: ${{ steps.check-build-output-linux-x86-64bit.outputs.build-linux-x86-64bit-tgz-asset }}
+      build-windows-x86-32bit: ${{ steps.check-build-output-windows-x86-32bit.outputs.build-windows-x86-32bit }}
+      build-windows-x86-32bit-zip-name: ${{ steps.check-build-output-windows-x86-32bit.outputs.build-windows-x86-32bit-zip-name }}
+      build-windows-x86-32bit-zip-asset: ${{ steps.check-build-output-windows-x86-32bit.outputs.build-windows-x86-32bit-zip-asset }}
+      build-windows-x86-32bit-setup-name: ${{ steps.check-build-output-windows-x86-32bit.outputs.build-windows-x86-32bit-setup-name }}
+      build-windows-x86-32bit-setup-asset: ${{ steps.check-build-output-windows-x86-32bit.outputs.build-windows-x86-32bit-setup-asset }}
+      build-windows-x86-64bit: ${{ steps.check-build-output-windows-x86-64bit.outputs.build-windows-x86-64bit }}
+      build-windows-x86-64bit-zip-name: ${{ steps.check-build-output-windows-x86-64bit.outputs.build-windows-x86-64bit-zip-name }}
+      build-windows-x86-64bit-zip-asset: ${{ steps.check-build-output-windows-x86-64bit.outputs.build-windows-x86-64bit-zip-asset }}
+      build-windows-x86-64bit-setup-name: ${{ steps.check-build-output-windows-x86-64bit.outputs.build-windows-x86-64bit-setup-name }}
+      build-windows-x86-64bit-setup-asset: ${{ steps.check-build-output-windows-x86-64bit.outputs.build-windows-x86-64bit-setup-asset }}
+      build-macos-universal: ${{ steps.check-build-output-macos-universal.outputs.build-macos-universal }}
+      build-macos-universal-dmg-name: ${{ steps.check-build-output-macos-universal.outputs.build-macos-universal-dmg-name }}
+      build-macos-universal-dmg-asset: ${{ steps.check-build-output-macos-universal.outputs.build-macos-universal-dmg-asset }}
+      build-macos-universal-zip-name: ${{ steps.check-build-output-macos-universal.outputs.build-macos-universal-zip-name }}
+      build-macos-universal-zip-asset: ${{ steps.check-build-output-macos-universal.outputs.build-macos-universal-zip-asset }}
+    steps:
+      - name: Download Xojo Builds for TargetWindows
+        if: ${{ inputs.build-windows-x86-32bit == true || inputs.build-windows-x86-64bit == true }}
+        uses: actions/download-artifact@v3
+        with:
+          name: XojoBuilds-TargetWindows
+      - name: Check Build Output - Linux x86 32Bit
+        id: check-build-output-linux-x86-32bit
+        if: ${{ inputs.build-linux-x86-32bit == true }}
+        run: |
+          if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_32BIT }}/${{ env.BUILD_LINUX_X86_32BIT_TGZ_NAME }}" ]; then
+            exit 1
+          fi
+          echo "::set-output name=build-linux-x86-32bit::done"
+          echo "::set-output name=build-linux-x86-32bit-tgz-name::${{ env.BUILD_LINUX_X86_32BIT_TGZ_NAME }}"
+          echo "::set-output name=build-linux-x86-32bit-tgz-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_32BIT }}/${{ env.BUILD_LINUX_X86_32BIT_TGZ_NAME }}"
+      - name: Check Build Output - Linux x86 64Bit
+        id: check-build-output-linux-x86-64bit
+        if: ${{ inputs.build-linux-x86-64bit == true }}
+        run: |
+          if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_64BIT }}/${{ env.BUILD_LINUX_X86_64BIT_TGZ_NAME }}" ]; then
+            exit 1
+          fi
+          echo "::set-output name=build-linux-x86-64bit::done"
+          echo "::set-output name=build-linux-x86-64bit-tgz-name::${{ env.BUILD_LINUX_X86_64BIT_TGZ_NAME }}"
+          echo "::set-output name=build-linux-x86-64bit-tgz-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_64BIT }}/${{ env.BUILD_LINUX_X86_64BIT_TGZ_NAME }}"
+      - name: Check Build Output - Windows x86 32Bit
+        id: check-build-output-windows-x86-32bit
+        if: ${{ inputs.build-windows-x86-32bit == true }}
+        run: |
+          if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}/${{ env.BUILD_WINDOWS_X86_32BIT_ZIP_NAME }}" ]; then
+            exit 1
+          fi
+          if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}/${{ env.BUILD_WINDOWS_X86_32BIT_SETUP_NAME }}" ]; then
+            exit 1
+          fi
+          echo "::set-output name=build-windows-x86-32bit::done"
+          echo "::set-output name=build-windows-x86-32bit-zip-name::${{ env.BUILD_WINDOWS_X86_32BIT_ZIP_NAME }}"
+          echo "::set-output name=build-windows-x86-32bit-zip-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}/${{ env.BUILD_WINDOWS_X86_32BIT_ZIP_NAME }}"
+          echo "::set-output name=build-windows-x86-32bit-setup-name::${{ env.BUILD_WINDOWS_X86_32BIT_SETUP_NAME }}"
+          echo "::set-output name=build-windows-x86-32bit-setup-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}/${{ env.BUILD_WINDOWS_X86_32BIT_SETUP_NAME }}"
+      - name: Check Build Output - Windows x86 64Bit
+        id: check-build-output-windows-x86-64bit
+        if: ${{ inputs.build-windows-x86-64bit == true }}
+        run: |
+          if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_ZIP_NAME }}" ]; then
+            exit 1
+          fi
+          if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_SETUP_NAME }}" ]; then
+            exit 1
+          fi
+          echo "::set-output name=build-windows-x86-64bit::done"
+          echo "::set-output name=build-windows-x86-64bit-zip-name::${{ env.BUILD_WINDOWS_X86_64BIT_ZIP_NAME }}"
+          echo "::set-output name=build-windows-x86-64bit-zip-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_ZIP_NAME }}"
+          echo "::set-output name=build-windows-x86-64bit-setup-name::${{ env.BUILD_WINDOWS_X86_64BIT_SETUP_NAME }}"
+          echo "::set-output name=build-windows-x86-64bit-setup-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_SETUP_NAME }}"
+      - name: Check Build Output - macOS Universal
+        id: check-build-output-macos-universal
+        if: ${{ inputs.build-macos-universal == true }}
+        run: |
+          if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_DMG_NAME }}" ]; then
+            exit 1
+          fi
+          if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_ZIP_NAME }}" ]; then
+            exit 1
+          fi
+          echo "::set-output name=build-macos-universal::done"
+          echo "::set-output name=build-macos-universal-dmg-name::${{ env.BUILD_MACOS_UNIVERSAL_DMG_NAME }}"
+          echo "::set-output name=build-macos-universal-dmg-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_DMG_NAME }}"
+          echo "::set-output name=build-macos-universal-zip-name::${{ env.BUILD_MACOS_UNIVERSAL_ZIP_NAME }}"
+          echo "::set-output name=build-macos-universal-zip-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_ZIP_NAME }}"
+#       Note: Upload Artifacts ignores files that don't exist without throwing an error
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Builds
+          retention-days: ${{ inputs.artifacts-retention-days }}
+          path: |
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_32BIT }}/${{ env.BUILD_LINUX_X86_32BIT_TGZ_NAME }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_64BIT }}/${{ env.BUILD_LINUX_X86_64BIT_TGZ_NAME }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}/${{ env.BUILD_WINDOWS_X86_32BIT_ZIP_NAME }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}/${{ env.BUILD_WINDOWS_X86_32BIT_SETUP_NAME }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_ZIP_NAME }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_SETUP_NAME }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_DMG_NAME }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_ZIP_NAME }}
+          if-no-files-found: error
