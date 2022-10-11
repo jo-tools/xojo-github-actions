@@ -39,7 +39,7 @@ jobs:
           echo "Xojo Project Version: $VERSION"
           echo "Version Tag: $VERSION_TAG"
           echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_ENV
-          echo "::set-output name=version-tag::$VERSION_TAG"
+          echo "version-tag=$VERSION_TAG" >> $GITHUB_OUTPUT
       - name: Check Release Version Tag
         id: github-tag
         uses: actions/github-script@v6
