@@ -378,7 +378,7 @@ jobs:
           fi
           echo "build-linux-x86-64bit=done" >> $GITHUB_OUTPUT
           echo "build-linux-x86-64bit-tgz-name=${{ env.BUILD_LINUX_X86_64BIT_TGZ_NAME }}" >> $GITHUB_OUTPUT
-          echo "build-linux-x86-64bit-tgz-asset=done" >> $GITHUB_OUTPUT
+          echo "build-linux-x86-64bit-tgz-asset=${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_64BIT }}/${{ env.BUILD_LINUX_X86_64BIT_TGZ_NAME }}" >> $GITHUB_OUTPUT
       - name: Check Build Output - Windows x86 32Bit
         id: check-build-output-windows-x86-32bit
         if: ${{ inputs.build-windows-x86-32bit == true }}
