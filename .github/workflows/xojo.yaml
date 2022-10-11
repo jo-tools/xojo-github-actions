@@ -366,9 +366,9 @@ jobs:
           if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_32BIT }}/${{ env.BUILD_LINUX_X86_32BIT_TGZ_NAME }}" ]; then
             exit 1
           fi
-          echo "::set-output name=build-linux-x86-32bit::done"
-          echo "::set-output name=build-linux-x86-32bit-tgz-name::${{ env.BUILD_LINUX_X86_32BIT_TGZ_NAME }}"
-          echo "::set-output name=build-linux-x86-32bit-tgz-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_32BIT }}/${{ env.BUILD_LINUX_X86_32BIT_TGZ_NAME }}"
+          echo "build-linux-x86-32bit=done" >> $GITHUB_OUTPUT
+          echo "build-linux-x86-32bit-tgz-name=${{ env.BUILD_LINUX_X86_32BIT_TGZ_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-linux-x86-32bit-tgz-asset=${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_32BIT }}/${{ env.BUILD_LINUX_X86_32BIT_TGZ_NAME }}" >> $GITHUB_OUTPUT
       - name: Check Build Output - Linux x86 64Bit
         id: check-build-output-linux-x86-64bit
         if: ${{ inputs.build-linux-x86-64bit == true }}
@@ -376,9 +376,9 @@ jobs:
           if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_64BIT }}/${{ env.BUILD_LINUX_X86_64BIT_TGZ_NAME }}" ]; then
             exit 1
           fi
-          echo "::set-output name=build-linux-x86-64bit::done"
-          echo "::set-output name=build-linux-x86-64bit-tgz-name::${{ env.BUILD_LINUX_X86_64BIT_TGZ_NAME }}"
-          echo "::set-output name=build-linux-x86-64bit-tgz-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_64BIT }}/${{ env.BUILD_LINUX_X86_64BIT_TGZ_NAME }}"
+          echo "build-linux-x86-64bit=done" >> $GITHUB_OUTPUT
+          echo "build-linux-x86-64bit-tgz-name=${{ env.BUILD_LINUX_X86_64BIT_TGZ_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-linux-x86-64bit-tgz-asset=done" >> $GITHUB_OUTPUT
       - name: Check Build Output - Windows x86 32Bit
         id: check-build-output-windows-x86-32bit
         if: ${{ inputs.build-windows-x86-32bit == true }}
@@ -389,11 +389,11 @@ jobs:
           if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}/${{ env.BUILD_WINDOWS_X86_32BIT_SETUP_NAME }}" ]; then
             exit 1
           fi
-          echo "::set-output name=build-windows-x86-32bit::done"
-          echo "::set-output name=build-windows-x86-32bit-zip-name::${{ env.BUILD_WINDOWS_X86_32BIT_ZIP_NAME }}"
-          echo "::set-output name=build-windows-x86-32bit-zip-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}/${{ env.BUILD_WINDOWS_X86_32BIT_ZIP_NAME }}"
-          echo "::set-output name=build-windows-x86-32bit-setup-name::${{ env.BUILD_WINDOWS_X86_32BIT_SETUP_NAME }}"
-          echo "::set-output name=build-windows-x86-32bit-setup-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}/${{ env.BUILD_WINDOWS_X86_32BIT_SETUP_NAME }}"
+          echo "build-windows-x86-32bit=done" >> $GITHUB_OUTPUT
+          echo "build-windows-x86-32bit-zip-name=${{ env.BUILD_WINDOWS_X86_32BIT_ZIP_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-windows-x86-32bit-zip-asset=${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}/${{ env.BUILD_WINDOWS_X86_32BIT_ZIP_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-windows-x86-32bit-setup-name=${{ env.BUILD_WINDOWS_X86_32BIT_SETUP_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-windows-x86-32bit-setup-asset=${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}/${{ env.BUILD_WINDOWS_X86_32BIT_SETUP_NAME }}" >> $GITHUB_OUTPUT
       - name: Check Build Output - Windows x86 64Bit
         id: check-build-output-windows-x86-64bit
         if: ${{ inputs.build-windows-x86-64bit == true }}
@@ -404,11 +404,11 @@ jobs:
           if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_SETUP_NAME }}" ]; then
             exit 1
           fi
-          echo "::set-output name=build-windows-x86-64bit::done"
-          echo "::set-output name=build-windows-x86-64bit-zip-name::${{ env.BUILD_WINDOWS_X86_64BIT_ZIP_NAME }}"
-          echo "::set-output name=build-windows-x86-64bit-zip-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_ZIP_NAME }}"
-          echo "::set-output name=build-windows-x86-64bit-setup-name::${{ env.BUILD_WINDOWS_X86_64BIT_SETUP_NAME }}"
-          echo "::set-output name=build-windows-x86-64bit-setup-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_SETUP_NAME }}"
+          echo "build-windows-x86-64bit=done" >> $GITHUB_OUTPUT
+          echo "build-windows-x86-64bit-zip-name=${{ env.BUILD_WINDOWS_X86_64BIT_ZIP_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-windows-x86-64bit-zip-asset=${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_ZIP_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-windows-x86-64bit-setup-name=${{ env.BUILD_WINDOWS_X86_64BIT_SETUP_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-windows-x86-64bit-setup-asset=${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_SETUP_NAME }}" >> $GITHUB_OUTPUT
       - name: Check Build Output - macOS Universal
         id: check-build-output-macos-universal
         if: ${{ inputs.build-macos-universal == true }}
@@ -419,11 +419,11 @@ jobs:
           if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_ZIP_NAME }}" ]; then
             exit 1
           fi
-          echo "::set-output name=build-macos-universal::done"
-          echo "::set-output name=build-macos-universal-dmg-name::${{ env.BUILD_MACOS_UNIVERSAL_DMG_NAME }}"
-          echo "::set-output name=build-macos-universal-dmg-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_DMG_NAME }}"
-          echo "::set-output name=build-macos-universal-zip-name::${{ env.BUILD_MACOS_UNIVERSAL_ZIP_NAME }}"
-          echo "::set-output name=build-macos-universal-zip-asset::${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_ZIP_NAME }}"
+          echo "build-macos-universal=done" >> $GITHUB_OUTPUT
+          echo "build-macos-universal-dmg-name=${{ env.BUILD_MACOS_UNIVERSAL_DMG_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-macos-universal-dmg-asset=${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_DMG_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-macos-universal-zip-name=${{ env.BUILD_MACOS_UNIVERSAL_ZIP_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-macos-universal-zip-asset=${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_ZIP_NAME }}" >> $GITHUB_OUTPUT
 #       Note: Upload Artifacts ignores files that don't exist without throwing an error
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
