@@ -42,7 +42,7 @@ on:
         required: true
       MACOS_NOTARIZATION_ACCOUNT:
         required: true
-      MACOS_NOTARIZATION_PROVIDER_SHORTNAME:
+      MACOS_NOTARIZATION_TEAMID:
         required: true
       MACOS_NOTARIZATION_APPSPECIFIC_PASSWORD:
         required: true
@@ -199,7 +199,7 @@ jobs:
           P12_PASSWORD: ${{ secrets.MACOS_CODESIGN_CERTIFICATE_PASSWORD }}
           KEYCHAIN_PASSWORD: ${{ secrets.MACOS_CODESIGN_KEYCHAIN_PASSWORD }}
           NOTARIZATION_ACCOUNT: ${{ secrets.MACOS_NOTARIZATION_ACCOUNT }}
-          NOTARIZATION_PROVIDER_SHORTNAME: ${{ secrets.MACOS_NOTARIZATION_PROVIDER_SHORTNAME }}
+          NOTARIZATION_TEAMID: ${{ secrets.MACOS_NOTARIZATION_TEAMID }}
           NOTARIZATION_APPSPECIFIC_PASSWORD: ${{ secrets.MACOS_NOTARIZATION_APPSPECIFIC_PASSWORD }}
         run: |
           # create variables
@@ -215,10 +215,15 @@ jobs:
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
           # import certificate to keychain
-          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
           
+          # setup notarytool
+          xcrun notarytool store-credentials "Xojo2DMG-notarytool" --apple-id "$NOTARIZATION_ACCOUNT" --team-id "$NOTARIZATION_TEAMID" --password "$NOTARIZATION_APPSPECIFIC_PASSWORD" --keychain $KEYCHAIN_PATH
+          
           # Xojo2DMG
+          export NOTARIZATION_KEYCHAIN_PATH=$KEYCHAIN_PATH
           chmod 755 ./"${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_POSTBUILD_SHELLSCRIPT }}"
           ./"${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_POSTBUILD_SHELLSCRIPT }}"
       - name: Clean up Build Keychain
