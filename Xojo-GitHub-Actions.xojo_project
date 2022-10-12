@@ -1,5 +1,5 @@
 Type=Desktop
-RBProjectVersion=2022.02
+RBProjectVersion=2022.03
 MinIDEVersion=20210300
 OrigIDEVersion=20220200
 BuildSteps=Build Automation;Build Automation.xojo_code;&h00000000298E0FFF;&h0000000000000000;false
