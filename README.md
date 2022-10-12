@@ -20,6 +20,8 @@ Included in this repository:
     - Xojo *(a resuable Workflow to build Xojo applications*)
 
 ### ScreenShots
+*The following ScreenShots have been taken during the initial Development of the Workflows while using Xojo 2022r2. Even though their are outdated (and won't be updated) you should get the idea...*
+
 Beta Build on Pull Request:  
 ![ScreenShot: Beta Build on Pull Request](docs/Beta-Build.gif?raw=true)
 
