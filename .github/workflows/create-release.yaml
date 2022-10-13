@@ -93,91 +93,24 @@ jobs:
     steps:
       - name: Create release
         id: create_release
-        uses: actions/create-release@v1
+        # https://github.com/softprops/action-gh-release
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ needs.project-version.outputs.version-tag }}
-          release_name: ${{ needs.project-version.outputs.version-tag }}
+          name: ${{ needs.project-version.outputs.version-tag }}
           draft: false
           prerelease: false
-      - name: Upload Linux 32Bit .tgz release asset
-        if: ${{ needs.xojo.outputs.build-linux-x86-32bit == 'done'}}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: ${{ needs.xojo.outputs.build-linux-x86-32bit-tgz-name }}
-          asset_path: ${{ needs.xojo.outputs.build-linux-x86-32bit-tgz-asset }}
-          asset_content_type: application/tgz
-      - name: Upload Linux 64Bit .tgz release asset
-        if: ${{ needs.xojo.outputs.build-linux-x86-64bit == 'done'}}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: ${{ needs.xojo.outputs.build-linux-x86-64bit-tgz-name }}
-          asset_path: ${{ needs.xojo.outputs.build-linux-x86-64bit-tgz-asset }}
-          asset_content_type: application/tgz
-      - name: Upload Windows 32Bit .zip release asset
-        if: ${{ needs.xojo.outputs.build-windows-x86-32bit == 'done'}}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: ${{ needs.xojo.outputs.build-windows-x86-32bit-zip-name }}
-          asset_path: ${{ needs.xojo.outputs.build-windows-x86-32bit-zip-asset }}
-          asset_content_type: application/zip
-      - name: Upload Windows 32Bit setup release asset
-        if: ${{ needs.xojo.outputs.build-windows-x86-32bit == 'done'}}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: ${{ needs.xojo.outputs.build-windows-x86-32bit-setup-name }}
-          asset_path: ${{ needs.xojo.outputs.build-windows-x86-32bit-setup-asset }}
-          asset_content_type: application/x-msdownload
-      - name: Upload Windows 64Bit .zip release asset
-        if: ${{ needs.xojo.outputs.build-windows-x86-64bit == 'done'}}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: ${{ needs.xojo.outputs.build-windows-x86-64bit-zip-name }}
-          asset_path: ${{ needs.xojo.outputs.build-windows-x86-64bit-zip-asset }}
-          asset_content_type: application/zip
-      - name: Upload Windows 64Bit setup release asset
-        if: ${{ needs.xojo.outputs.build-windows-x86-64bit == 'done'}}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: ${{ needs.xojo.outputs.build-windows-x86-64bit-setup-name }}
-          asset_path: ${{ needs.xojo.outputs.build-windows-x86-64bit-setup-asset }}
-          asset_content_type: application/x-msdownload
-      - name: Upload macOS Universal .dmg release asset
-        if: ${{ needs.xojo.outputs.build-macos-universal == 'done'}}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: ${{ needs.xojo.outputs.build-macos-universal-dmg-name }}
-          asset_path: ${{ needs.xojo.outputs.build-macos-universal-dmg-asset }}
-          asset_content_type: application/octet-stream
-      - name: Upload macOS Universal .zip release asset
-        if: ${{ needs.xojo.outputs.build-macos-universal == 'done'}}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: ${{ needs.xojo.outputs.build-macos-universal-zip-name }}
-          asset_path: ${{ needs.xojo.outputs.build-macos-universal-zip-asset }}
-          asset_content_type: application/zip
+          generate_release_notes: true
+          fail_on_unmatched_files: false
+          # There will be no error if the Release does not include all Targets 
+          files: |
+            ${{ needs.xojo.outputs.build-linux-x86-32bit-tgz-asset }}
+            ${{ needs.xojo.outputs.build-linux-x86-64bit-tgz-asset }}
+            ${{ needs.xojo.outputs.build-windows-x86-32bit-zip-asset }}
+            ${{ needs.xojo.outputs.build-windows-x86-32bit-setup-asset }}
+            ${{ needs.xojo.outputs.build-windows-x86-64bit-zip-asset }}
+            ${{ needs.xojo.outputs.build-windows-x86-64bit-setup-asset }}
+            ${{ needs.xojo.outputs.build-macos-universal-dmg-asset }}
+            ${{ needs.xojo.outputs.build-macos-universal-zip-asset }}
