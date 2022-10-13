@@ -4,23 +4,36 @@ Xojo Build Automation using GitHub Actions
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## Description
-Let's see how to automate the build processes of Xojo built applications with GitHub Actions. With no interaction, we're going to automate the full process: CodeSign Windows executables, create and sign the installer, package the macOS app in a .dmg and notarize the app, and for Linux let's just build a ready to download .tgz.
+Would you like to automate the build processes of Xojo built applications with GitHub Actions? With no user interaction the whole process is being performed: Build all Targets, CodeSign Windows executables, create and sign the installer, package the macOS app in a .dmg and notarize the app, and for Linux a .tgz package.
 
 Included in this repository:
 - Documentation: [Xojo-GitHub-Actions.pdf](./docs/Xojo-GitHub-Actions.pdf)
 - Source: [Xojo IDE Communicator](./xojo-ide-communicator/)
 - Example Xojo Project: ```Xojo-GitHub-Actions.xojo_project```
+  - [Build Resources](./_build/)
+    - Windows: CodeSigning, Installer
+    - macOS: CodeSigning, DMG Creation, Notarization *(using [Xojo2DMG](https://github.com/jo-tools/xojo2dmg))*
+    - Linux: Post Build Script *(to create a .tgz)*
+  - [GitHub Actions Workflows](./.github/workflows/)
+    - Beta Build
+    - Create Release
+    - Xojo *(a resuable Workflow to build Xojo applications*)
 
-Tool used for macOS CodeSigning and Notarization:
-- [Xojo2DMG](https://github.com/jo-tools/xojo2dmg)
+### ScreenShots
+*The following ScreenShots have been taken during the initial Development of the Workflows while using Xojo 2022r2. Even though their are outdated (and won't be updated) you should get the idea...*
 
+Beta Build on Pull Request:  
+![ScreenShot: Beta Build on Pull Request](docs/Beta-Build.gif?raw=true)
+
+Create Release:  
+![ScreenShot: Create Release](docs/Create-Release.gif?raw=true)
 
 ## Xojo
 ### Requirements
 [Xojo](https://www.xojo.com/) is a rapid application development for Desktop, Web, Mobile & Raspberry Pi.  
 
 The Desktop application Xojo example project and the Xojo IDE Communicator project are using:
-- Xojo 2022r2
+- Xojo 2022r3
 - API 2
 
 ## About
