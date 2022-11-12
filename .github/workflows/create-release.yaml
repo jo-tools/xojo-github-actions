@@ -88,29 +88,88 @@ jobs:
 
   create-release:
     name: Create Release
-    runs-on: [self-hosted, macOS, Xojo]
+    runs-on: ubuntu-latest
     needs: [project-version, xojo]
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BUILDS_FOLDER: ${{ github.workspace }}/_BUILDS
     steps:
-      - name: Create release
-        id: create_release
-        # https://github.com/softprops/action-gh-release
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check out Repository
+        uses: actions/checkout@v3
+      - name: Create Builds Folder
+        run: |
+          mkdir -p ${{ env.BUILDS_FOLDER }}
+      - name: Download Builds
+        uses: actions/download-artifact@v3
         with:
-          tag_name: ${{ needs.project-version.outputs.version-tag }}
-          name: ${{ needs.project-version.outputs.version-tag }}
-          draft: false
-          prerelease: false
-          generate_release_notes: true
-          fail_on_unmatched_files: false
-          # There will be no error if the Release does not include all Targets 
-          files: |
-            ${{ needs.xojo.outputs.build-linux-x86-32bit-tgz-asset }}
-            ${{ needs.xojo.outputs.build-linux-x86-64bit-tgz-asset }}
-            ${{ needs.xojo.outputs.build-windows-x86-32bit-zip-asset }}
-            ${{ needs.xojo.outputs.build-windows-x86-32bit-setup-asset }}
-            ${{ needs.xojo.outputs.build-windows-x86-64bit-zip-asset }}
-            ${{ needs.xojo.outputs.build-windows-x86-64bit-setup-asset }}
-            ${{ needs.xojo.outputs.build-macos-universal-dmg-asset }}
-            ${{ needs.xojo.outputs.build-macos-universal-zip-asset }}
+          name: Builds
+          path: ${{ env.BUILDS_FOLDER }}
+      - name: Create Release as Draft
+        working-directory: ${{ github.workspace }}
+        run: |
+          gh release create ${{ needs.project-version.outputs.version-tag }} --generate-notes --draft=true
+      - name: Wait until Draft Release is available
+        working-directory: ${{ github.workspace }}
+        shell: bash {0}
+        run: |
+          for i in {1..10}
+          do
+            gh release view ${{ needs.project-version.outputs.version-tag }}
+            if [ $? -eq 0 ]; then
+              echo "Draft Release is ready"
+              exit 0
+            fi
+            echo "Draft Release is not ready yet"
+            sleep 1
+          done
+          echo "Draft Release not found in 10 attempts"
+          exit 1
+      - name: Upload Linux 32Bit .tgz release asset
+        if: ${{ needs.xojo.outputs.build-linux-x86-32bit == 'done'}}
+        working-directory: ${{ env.BUILDS_FOLDER }}
+        run: |
+          gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-linux-x86-32bit-tgz-asset }}#${{ needs.xojo.outputs.build-linux-x86-32bit-tgz-name }}"
+      - name: Upload Linux 64Bit .tgz release asset
+        if: ${{ needs.xojo.outputs.build-linux-x86-64bit == 'done'}}
+        working-directory: ${{ env.BUILDS_FOLDER }}
+        run: |
+          gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-linux-x86-64bit-tgz-asset }}#${{ needs.xojo.outputs.build-linux-x86-64bit-tgz-name }}"
+      - name: Upload Windows 32Bit .zip release asset
+        if: ${{ needs.xojo.outputs.build-windows-x86-32bit == 'done'}}
+        working-directory: ${{ env.BUILDS_FOLDER }}
+        run: |
+          gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-windows-x86-32bit-zip-asset }}#${{ needs.xojo.outputs.build-windows-x86-32bit-zip-name }}"
+      - name: Upload Windows 32Bit setup release asset
+        if: ${{ needs.xojo.outputs.build-windows-x86-32bit == 'done'}}
+        working-directory: ${{ env.BUILDS_FOLDER }}
+        run: |
+          gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-windows-x86-32bit-setup-asset }}#${{ needs.xojo.outputs.build-windows-x86-32bit-setup-name }}"
+      - name: Upload Windows 64Bit .zip release asset
+        if: ${{ needs.xojo.outputs.build-windows-x86-64bit == 'done'}}
+        working-directory: ${{ env.BUILDS_FOLDER }}
+        run: |
+          gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-windows-x86-64bit-zip-asset }}#${{ needs.xojo.outputs.build-windows-x86-64bit-zip-name }}"
+      - name: Upload Windows 64Bit setup release asset
+        if: ${{ needs.xojo.outputs.build-windows-x86-64bit == 'done'}}
+        working-directory: ${{ env.BUILDS_FOLDER }}
+        run: |
+          gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-windows-x86-64bit-setup-asset }}#${{ needs.xojo.outputs.build-windows-x86-64bit-setup-name }}"
+      - name: Upload macOS Universal .dmg release asset
+        if: ${{ needs.xojo.outputs.build-macos-universal == 'done'}}
+        working-directory: ${{ env.BUILDS_FOLDER }}
+        run: |
+          gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-macos-universal-dmg-asset }}#${{ needs.xojo.outputs.build-macos-universal-dmg-name }}"
+      - name: Upload macOS Universal .zip release asset
+        if: ${{ needs.xojo.outputs.build-macos-universal == 'done'}}
+        working-directory: ${{ env.BUILDS_FOLDER }}
+        run: |
+          gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-macos-universal-zip-asset }}#${{ needs.xojo.outputs.build-macos-universal-zip-name }}"
+      - name: Publish Release
+        working-directory: ${{ github.workspace }}
+        run: |
+          gh release edit ${{ needs.project-version.outputs.version-tag }} --draft=false
+      - name: Delete Release in case of a failure
+        if: ${{ failure() }}
+        working-directory: ${{ github.workspace }}
+        run: |
+          gh release delete ${{ needs.project-version.outputs.version-tag }} --yes
