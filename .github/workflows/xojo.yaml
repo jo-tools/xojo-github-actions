@@ -96,8 +96,8 @@ on:
 
 env:
   XOJO_AUTOMATION: TRUE
-  XOJO_IPCPATH: Xojo2022r3
-  XOJO_IDE_APP: /Applications/Xojo/Xojo 2022 Release 3/Xojo 2022r3.app
+  XOJO_IPCPATH: Xojo2022r32
+  XOJO_IDE_APP: /Applications/Xojo/Xojo 2022 Release 3.2/Xojo 2022r3.2.app
   XOJO_IDE_COMMUNICATOR: /Applications/Xojo/XojoIDECommunicator/XojoIDECommunicator
   XOJO_IDE_COMMUNICATOR_SLEEP: 15
   XOJO_IDE_LAUNCH_SLEEP: 40
