@@ -41,7 +41,7 @@ Begin DesktopWindow Window1
       LockRight       =   True
       LockTop         =   True
       Multiline       =   False
-      Scope           =   0
+      Scope           =   2
       Selectable      =   False
       TabIndex        =   7
       TabPanelIndex   =   0
@@ -73,7 +73,7 @@ Begin DesktopWindow Window1
       LockRight       =   True
       LockTop         =   True
       Multiline       =   False
-      Scope           =   0
+      Scope           =   2
       Selectable      =   False
       TabIndex        =   8
       TabPanelIndex   =   0
@@ -105,7 +105,7 @@ Begin DesktopWindow Window1
       LockRight       =   True
       LockTop         =   True
       Multiline       =   False
-      Scope           =   0
+      Scope           =   2
       Selectable      =   False
       TabIndex        =   9
       TabPanelIndex   =   0
@@ -386,7 +386,7 @@ End
 		  "Minor: " + Str(App.MinorVersion) + " | " + _
 		  "Bug: " + Str(App.BugVersion) + " | " + _
 		  "NonRelease: " + Str(App.NonReleaseVersion) + " | " + _
-		  "App.Version=" + App.Version
+		  "App.Version: " + App.Version
 		  
 		End Sub
 	#tag EndEvent
