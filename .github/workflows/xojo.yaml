@@ -51,6 +51,8 @@ on:
       WINDOWS_CODESIGN_CERTIFICATE_PASSWORD:
         required: true
     outputs:
+      buildmac-xojobuilds-folder:
+        value: ${{ jobs.publish-artifacts.outputs.buildmac-xojobuilds-folder }}
       build-linux-x86-32bit:
         value: ${{ jobs.publish-artifacts.outputs.build-linux-x86-32bit }}
       build-linux-x86-32bit-tgz-name:
@@ -332,6 +334,7 @@ jobs:
     needs: [build, postbuild, postbuild-windows]
     if: always()
     outputs:
+      buildmac-xojobuilds-folder: ${{ steps.check-build-output-buildmac-xojobuilds-folder.outputs.buildmac-xojobuilds-folder }}
       build-linux-x86-32bit: ${{ steps.check-build-output-linux-x86-32bit.outputs.build-linux-x86-32bit }}
       build-linux-x86-32bit-tgz-name: ${{ steps.check-build-output-linux-x86-32bit.outputs.build-linux-x86-32bit-tgz-name }}
       build-linux-x86-32bit-tgz-asset: ${{ steps.check-build-output-linux-x86-32bit.outputs.build-linux-x86-32bit-tgz-asset }}
@@ -359,6 +362,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: XojoBuilds-TargetWindows
+      - name: Check Buildmac Xojo Builds Folder
+        id: check-build-output-buildmac-xojobuilds-folder
+        run: |
+          if [ ! -d "${{ env.FOLDER_BUILDS }}" ]; then
+            exit 1
+          fi
+          echo "buildmac-xojobuilds-folder=${{ env.FOLDER_BUILDS }}" >> $GITHUB_OUTPUT
       - name: Check Build Output - Linux x86 32Bit
         id: check-build-output-linux-x86-32bit
         if: ${{ inputs.build-linux-x86-32bit == true }}
