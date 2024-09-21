@@ -236,7 +236,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ inputs.build-windows-x86-32bit == true }}
         with:
-          name: XojoBuilds-TargetWindows
+          name: XojoBuilds-TargetWindows-x86-32bit
           retention-days: 1
           path: |
             ${{ env.BUILD_WINDOWS_X86_32BIT_CODESIGNSCRIPT }}
@@ -247,7 +247,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ inputs.build-windows-x86-64bit == true }}
         with:
-          name: XojoBuilds-TargetWindows
+          name: XojoBuilds-TargetWindows-x86-64bit
           retention-days: 1
           path: |
             ${{ env.BUILD_WINDOWS_X86_64BIT_CODESIGNSCRIPT }}
@@ -265,10 +265,16 @@ jobs:
       CERTIFICATE_PFX: certificate\certificate.pfx
       TIMESTAMP_SERVER: http://timestamp.digicert.com
     steps:
-      - name: Download Xojo Builds for TargetWindows
+      - name: Download Xojo Builds for TargetWindows x86 32Bit
+        if: ${{ inputs.build-windows-x86-32bit == true }}
         uses: actions/download-artifact@v4
         with:
-          name: XojoBuilds-TargetWindows
+          name: XojoBuilds-TargetWindows-x86-32bit
+      - name: Download Xojo Builds for TargetWindows x86 64Bit
+        if: ${{ inputs.build-windows-x86-64bit == true }}
+        uses: actions/download-artifact@v4
+        with:
+          name: XojoBuilds-TargetWindows-x86-64bit
       - name: Create Code Signing Certificate
         shell: powershell
         run: |
@@ -309,7 +315,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ inputs.build-windows-x86-32bit == true }}
         with:
-          name: XojoBuilds-TargetWindows
+          name: XojoBuilds-TargetWindows-Processed-x86-32bit
           retention-days: 1
           path: |
             ${{ env.BUILD_WINDOWS_X86_32BIT_INNOSETUPSCRIPT }}
@@ -319,7 +325,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ inputs.build-windows-x86-64bit == true }}
         with:
-          name: XojoBuilds-TargetWindows
+          name: XojoBuilds-TargetWindows-Processed-x86-64bit
           retention-days: 1
           path: |
             ${{ env.BUILD_WINDOWS_X86_64BIT_INNOSETUPSCRIPT }}
@@ -357,11 +363,16 @@ jobs:
       build-macos-universal-zip-name: ${{ steps.check-build-output-macos-universal.outputs.build-macos-universal-zip-name }}
       build-macos-universal-zip-asset: ${{ steps.check-build-output-macos-universal.outputs.build-macos-universal-zip-asset }}
     steps:
-      - name: Download Xojo Builds for TargetWindows
-        if: ${{ inputs.build-windows-x86-32bit == true || inputs.build-windows-x86-64bit == true }}
+      - name: Download Xojo Builds for TargetWindows x86 32Bit
+        if: ${{ inputs.build-windows-x86-32bit == true }}
         uses: actions/download-artifact@v4
         with:
-          name: XojoBuilds-TargetWindows
+          name: XojoBuilds-TargetWindows-Processed-x86-32bit
+      - name: Download Xojo Builds for TargetWindows x86 64Bit
+        if: ${{ inputs.build-windows-x86-64bit == true }}
+        uses: actions/download-artifact@v4
+        with:
+          name: XojoBuilds-TargetWindows-Processed-x86-64bit
       - name: Check Buildmac Xojo Builds Folder
         id: check-build-output-buildmac-xojobuilds-folder
         run: |
