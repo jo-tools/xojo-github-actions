@@ -233,7 +233,7 @@ jobs:
         run: |
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
       - name: Upload Xojo Builds for Windows x86 32Bit
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ inputs.build-windows-x86-32bit == true }}
         with:
           name: XojoBuilds-TargetWindows
@@ -244,7 +244,7 @@ jobs:
             ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}
           if-no-files-found: error
       - name: Upload Xojo Builds for Windows x86 64Bit
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ inputs.build-windows-x86-64bit == true }}
         with:
           name: XojoBuilds-TargetWindows
@@ -266,7 +266,7 @@ jobs:
       TIMESTAMP_SERVER: http://timestamp.digicert.com
     steps:
       - name: Download Xojo Builds for TargetWindows
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: XojoBuilds-TargetWindows
       - name: Create Code Signing Certificate
@@ -306,7 +306,7 @@ jobs:
         run: |
           & "${env:ProgramFiles(x86)}/Inno Setup 6/iscc.exe" "/SCodeSignSHA1=${{ env.SIGNTOOL_EXE_CMD }} sign /f `"${{ github.workspace }}\${{ env.CERTIFICATE_PFX }}`" /p `"${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}`" /fd sha1 /t ${{ env.TIMESTAMP_SERVER }} /v `$f" "/SCodeSignSHA256=${{ env.SIGNTOOL_EXE_CMD }} sign /as /f `"${{ github.workspace }}\${{ env.CERTIFICATE_PFX }}`" /p `"${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}`" /fd sha256 /tr ${{ env.TIMESTAMP_SERVER }} /td sha256 /v `$f" /O"${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}" /Dsourcepath="${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}\${{ env.BUILD_WINDOWS_APP_FOLDER_NAME }}" "${{ github.workspace }}\_build\windows\innosetup_x86-64bit.iss"
       - name: Upload Xojo Builds for Windows x86 32Bit
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ inputs.build-windows-x86-32bit == true }}
         with:
           name: XojoBuilds-TargetWindows
@@ -316,7 +316,7 @@ jobs:
             ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}
           if-no-files-found: error
       - name: Upload Xojo Builds for Windows x86 64Bit
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ inputs.build-windows-x86-64bit == true }}
         with:
           name: XojoBuilds-TargetWindows
@@ -359,7 +359,7 @@ jobs:
     steps:
       - name: Download Xojo Builds for TargetWindows
         if: ${{ inputs.build-windows-x86-32bit == true || inputs.build-windows-x86-64bit == true }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: XojoBuilds-TargetWindows
       - name: Check Buildmac Xojo Builds Folder
@@ -436,7 +436,7 @@ jobs:
           echo "build-macos-universal-zip-asset=${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_ZIP_NAME }}" >> $GITHUB_OUTPUT
 #       Note: Upload Artifacts ignores files that don't exist without throwing an error
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Builds
           retention-days: ${{ inputs.artifacts-retention-days }}
