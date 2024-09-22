@@ -19,7 +19,7 @@ jobs:
           sync
           mkdir -p "${{ github.workspace }}"
       - name: Check out Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
   project-version:
     name: Project Version
@@ -42,7 +42,7 @@ jobs:
           echo "version-tag=$VERSION_TAG" >> $GITHUB_OUTPUT
       - name: Check Release Version Tag
         id: github-tag
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             try {
@@ -95,12 +95,12 @@ jobs:
       BUILDS_FOLDER: ${{ github.workspace }}/_BUILDS
     steps:
       - name: Check out Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Create Builds Folder
         run: |
           mkdir -p ${{ env.BUILDS_FOLDER }}
       - name: Download Builds
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Builds
           path: ${{ env.BUILDS_FOLDER }}
