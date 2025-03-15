@@ -120,13 +120,12 @@ Begin DesktopWindow Window1
       Visible         =   True
       Width           =   500
    End
-   Begin Canvas cnvAppIcon
+   Begin DesktopCanvas cnvAppIcon
       AllowAutoDeactivate=   True
       AllowFocus      =   False
       AllowFocusRing  =   True
       AllowTabs       =   False
       Backdrop        =   0
-      DoubleBuffer    =   False
       Enabled         =   True
       Height          =   64
       Index           =   -2147483648
@@ -147,11 +146,9 @@ Begin DesktopWindow Window1
       Visible         =   True
       Width           =   64
    End
-   Begin Label labAppName
+   Begin DesktopLabel labAppName
       AllowAutoDeactivate=   True
       Bold            =   False
-      DataField       =   ""
-      DataSource      =   ""
       Enabled         =   True
       FontName        =   "System"
       FontSize        =   0.0
@@ -182,11 +179,9 @@ Begin DesktopWindow Window1
       Visible         =   True
       Width           =   204
    End
-   Begin Label labThanks
+   Begin DesktopLabel labThanks
       AllowAutoDeactivate=   True
       Bold            =   False
-      DataField       =   ""
-      DataSource      =   ""
       Enabled         =   True
       FontName        =   "SmallSystem"
       FontSize        =   0.0
@@ -217,11 +212,9 @@ Begin DesktopWindow Window1
       Visible         =   True
       Width           =   209
    End
-   Begin Label labAppVersion
+   Begin DesktopLabel labAppVersion
       AllowAutoDeactivate=   True
       Bold            =   False
-      DataField       =   ""
-      DataSource      =   ""
       Enabled         =   True
       FontName        =   "System"
       FontSize        =   0.0
@@ -252,11 +245,9 @@ Begin DesktopWindow Window1
       Visible         =   True
       Width           =   204
    End
-   Begin Label labContact
+   Begin DesktopLabel labContact
       AllowAutoDeactivate=   True
       Bold            =   False
-      DataField       =   ""
-      DataSource      =   ""
       Enabled         =   True
       FontName        =   "System"
       FontSize        =   0.0
@@ -280,20 +271,19 @@ Begin DesktopWindow Window1
       Text            =   "Contact"
       TextAlignment   =   2
       TextColor       =   &c0072CE00
-      Tooltip         =   "xojo@jo-tools.ch"
+      Tooltip         =   "#kEmailContact"
       Top             =   54
       Transparent     =   True
       Underline       =   True
       Visible         =   True
       Width           =   70
    End
-   Begin Canvas cnvPayPal
+   Begin DesktopCanvas cnvPayPal
       AllowAutoDeactivate=   True
       AllowFocus      =   False
       AllowFocusRing  =   True
       AllowTabs       =   False
       Backdrop        =   0
-      DoubleBuffer    =   False
       Enabled         =   True
       Height          =   30
       Index           =   -2147483648
@@ -308,14 +298,15 @@ Begin DesktopWindow Window1
       TabIndex        =   5
       TabPanelIndex   =   0
       TabStop         =   True
-      Tooltip         =   "https://paypal.me/jotools"
+      Tooltip         =   "#kPayPalURL"
       Top             =   54
       Transparent     =   True
       Visible         =   True
       Width           =   106
    End
-   Begin Separator sepHeader
+   Begin DesktopSeparator sepHeader
       AllowAutoDeactivate=   True
+      AllowTabStop    =   True
       Enabled         =   True
       Height          =   4
       Index           =   -2147483648
@@ -329,7 +320,6 @@ Begin DesktopWindow Window1
       Scope           =   2
       TabIndex        =   6
       TabPanelIndex   =   0
-      TabStop         =   True
       Tooltip         =   ""
       Top             =   100
       Transparent     =   True
@@ -356,6 +346,12 @@ End
 	#tag EndConstant
 
 	#tag Constant, Name = kAppURL, Type = String, Dynamic = False, Default = \"https://github.com/jo-tools/xojo-github-actions", Scope = Private
+	#tag EndConstant
+
+	#tag Constant, Name = kEmailContact, Type = String, Dynamic = False, Default = \"xojo@jo-tools.ch", Scope = Private
+	#tag EndConstant
+
+	#tag Constant, Name = kPayPalURL, Type = String, Dynamic = False, Default = \"https://paypal.me/jotools", Scope = Private
 	#tag EndConstant
 
 
@@ -400,21 +396,21 @@ End
 #tag EndEvents
 #tag Events cnvAppIcon
 	#tag Event
-		Sub Paint(g As Graphics, areas() As REALbasic.Rect)
+		Sub Paint(g As Graphics, areas() As Rect)
 		  #Pragma unused areas
 		  
 		  g.DrawPicture(AppIcon_64, 0, 0)
 		End Sub
 	#tag EndEvent
 	#tag Event
-		Sub MouseUp(X As Integer, Y As Integer)
+		Sub MouseUp(x As Integer, y As Integer)
 		  If (x >= 0) And (x < Me.Width) And (y > 0) And (y < Me.Height) Then
 		    System.GotoURL(kAppURL)
 		  End If
 		End Sub
 	#tag EndEvent
 	#tag Event
-		Function MouseDown(X As Integer, Y As Integer) As Boolean
+		Function MouseDown(x As Integer, y As Integer) As Boolean
 		  #Pragma unused X
 		  #Pragma unused Y
 		  
@@ -435,21 +431,21 @@ End
 #tag EndEvents
 #tag Events labAppName
 	#tag Event
-		Sub Open()
+		Sub Opening()
 		  Me.Text = kAppName
 		  Me.FontSize = 18
 		  Me.Bold = True
 		End Sub
 	#tag EndEvent
 	#tag Event
-		Sub MouseUp(X As Integer, Y As Integer)
+		Sub MouseUp(x As Integer, y As Integer)
 		  If (x >= 0) And (x < Me.Width) And (y > 0) And (y < Me.Height) Then
 		    System.GotoURL(kAppURL)
 		  End If
 		End Sub
 	#tag EndEvent
 	#tag Event
-		Function MouseDown(X As Integer, Y As Integer) As Boolean
+		Function MouseDown(x As Integer, y As Integer) As Boolean
 		  #Pragma unused X
 		  #Pragma unused Y
 		  
@@ -470,7 +466,7 @@ End
 #tag EndEvents
 #tag Events labAppVersion
 	#tag Event
-		Sub Open()
+		Sub Opening()
 		  If (App.Version <> "") Then
 		    Me.Text = App.Version
 		    Return
@@ -493,7 +489,7 @@ End
 		End Sub
 	#tag EndEvent
 	#tag Event
-		Function MouseDown(X As Integer, Y As Integer) As Boolean
+		Function MouseDown(x As Integer, y As Integer) As Boolean
 		  #Pragma unused X
 		  #Pragma unused Y
 		  
@@ -501,16 +497,16 @@ End
 		End Function
 	#tag EndEvent
 	#tag Event
-		Sub MouseUp(X As Integer, Y As Integer)
+		Sub MouseUp(x As Integer, y As Integer)
 		  If (x >= 0) And (x < Me.Width) And (y > 0) And (y < Me.Height) Then
-		    System.GotoURL("mailto:xojo@jo-tools.ch")
+		    System.GotoURL("mailto:" + kEmailContact)
 		  End If
 		End Sub
 	#tag EndEvent
 #tag EndEvents
 #tag Events cnvPayPal
 	#tag Event
-		Sub Paint(g As Graphics, areas() As REALbasic.Rect)
+		Sub Paint(g As Graphics, areas() As Rect)
 		  #Pragma unused areas
 		  
 		  g.DrawingColor = &cFFFFFF
@@ -535,14 +531,14 @@ End
 		End Sub
 	#tag EndEvent
 	#tag Event
-		Sub MouseUp(X As Integer, Y As Integer)
+		Sub MouseUp(x As Integer, y As Integer)
 		  If (x >= 0) And (x < Me.Width) And (y > 0) And (y < Me.Height) Then
-		    System.GotoURL("https://paypal.me/jotools")
+		    System.GotoURL(kPayPalURL)
 		  End If
 		End Sub
 	#tag EndEvent
 	#tag Event
-		Function MouseDown(X As Integer, Y As Integer) As Boolean
+		Function MouseDown(x As Integer, y As Integer) As Boolean
 		  #Pragma unused X
 		  #Pragma unused Y
 		  
@@ -640,8 +636,7 @@ End
 			"6 - Rounded Window"
 			"7 - Global Floating Window"
 			"8 - Sheet Window"
-			"9 - Metal Window"
-			"11 - Modeless Dialog"
+			"9 - Modeless Dialog"
 		#tag EndEnumValues
 	#tag EndViewProperty
 	#tag ViewProperty
