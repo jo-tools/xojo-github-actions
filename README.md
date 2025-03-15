@@ -33,7 +33,7 @@ Create Release:
 [Xojo](https://www.xojo.com/) is a rapid application development for Desktop, Web, Mobile & Raspberry Pi.  
 
 The Desktop application Xojo example project and the Xojo IDE Communicator project are using:
-- Xojo 2024r2.1
+- Xojo 2024r4.2
 - API 2
 
 ## About
