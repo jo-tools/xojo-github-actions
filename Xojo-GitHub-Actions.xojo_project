@@ -1,5 +1,5 @@
 Type=Desktop
-RBProjectVersion=2024.021
+RBProjectVersion=2024.042
 MinIDEVersion=20210300
 OrigIDEVersion=20220200
 BuildSteps=Build Automation;Build Automation.xojo_code;&h00000000298E0FFF;&h0000000000000000;false
@@ -50,7 +50,7 @@ IsWebProject=False
 LinuxBuildArchitecture=1
 MacBuildArchitecture=4
 LinuxNormalizeControlSizes=True
-OptimizationLevel=0
+OptimizationLevel=6
 WindowsVersions={1f676c76-80e1-4239-95bb-83d0f6d0da78}|{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}
 WindowsRunAs=0
 MacOSMinimumVersion=
