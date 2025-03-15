@@ -98,8 +98,8 @@ on:
 
 env:
   XOJO_AUTOMATION: TRUE
-  XOJO_IPCPATH: Xojo2024r21
-  XOJO_IDE_APP: /Applications/Xojo/Xojo 2024 Release 2.1/Xojo 2024r2.1.app
+  XOJO_IPCPATH: Xojo2024r42
+  XOJO_IDE_APP: /Applications/Xojo/Xojo 2024 Release 4.2/Xojo 2024r4.2.app
   XOJO_IDE_COMMUNICATOR: /Applications/Xojo/XojoIDECommunicator/XojoIDECommunicator
   XOJO_IDE_COMMUNICATOR_SLEEP: 15
   XOJO_IDE_LAUNCH_SLEEP: 40
