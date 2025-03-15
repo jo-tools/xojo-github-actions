@@ -53,10 +53,9 @@ Compression=lzma
 SolidCompression=yes
 ChangesAssociations=yes
 
-; Require Windows 7 SP1 or later
-MinVersion=6.1sp1
+; Require Windows 8.1 with Update 1
+MinVersion=6.3.9600
 
-Signtool=CodeSignSHA1
 Signtool=CodeSignSHA256
 SignedUninstaller=yes
 
