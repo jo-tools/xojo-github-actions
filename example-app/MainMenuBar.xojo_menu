@@ -7,7 +7,7 @@ Begin Menu MainMenuBar
       AutoEnabled = True
       AutoEnable = True
       Visible = True
-      Begin DesktopMenuItem FileQuit
+      Begin DesktopQuitMenuItem FileQuit
          SpecialMenu = 0
          Index = -2147483648
          Text = "#App.kFileQuit"
