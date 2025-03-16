@@ -2,27 +2,29 @@
 $PFX_PASSWORD = $args[0];
 
 # This script requires the following Environment Variables:
-# ${env:INNOSETUP_EXE}
+# Signtool
 # ${env:SIGNTOOL_EXE}
-# ${env:CERTIFICATE_PFX}
 # ${env:TIMESTAMP_SERVER}
+#
+# Azure Trusted Signing
+# ${env:AZURE_TENANT_ID}
+# ${env:AZURE_CLIENT_ID}
+# ${env:AZURE_CLIENT_SECRET}
+# ${env:ACS_DLIB}
+# ${env:ACS_JSON}
 # 
+# Build Location
 # ${env:FOLDER_BUILDS}
 # ${env:FOLDER_BUILDS_WINDOWS_X86_32BIT}
 # ${env:BUILD_WINDOWS_APP_FOLDER_NAME}
 
 $FOLDER_CODESIGN = "${env:FOLDER_BUILDS}\${env:FOLDER_BUILDS_WINDOWS_X86_32BIT}\${env:BUILD_WINDOWS_APP_FOLDER_NAME}"
 
-# Perform CodeSign: SHA1 and SHA256
+# Perform CodeSign: SHA256
 function Do-Codesign([string] $toBeSigned) {
-    & "${env:SIGNTOOL_EXE}" sign     /f ${env:CERTIFICATE_PFX} /p "$PFX_PASSWORD" /fd sha1   /t  ${env:TIMESTAMP_SERVER}            /v "$FOLDER_CODESIGN\$toBeSigned"
+    & "${env:SIGNTOOL_EXE}" sign /fd sha256 /tr ${env:TIMESTAMP_SERVER} /td sha256 /v /dlib "${env:ACS_DLIB}" /dmdf "${env:ACS_JSON}" "$FOLDER_CODESIGN\$toBeSigned"
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "CodeSign SHA1 of '$toBeSigned' failed."
-        exit 1;
-    }
-    & "${env:SIGNTOOL_EXE}" sign /as /f ${env:CERTIFICATE_PFX} /p "$PFX_PASSWORD" /fd sha256 /tr ${env:TIMESTAMP_SERVER} /td sha256 /v "$FOLDER_CODESIGN\$toBeSigned"
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "CodeSign SHA256 of '$toBeSigned' failed."
+        Write-Host "Azure Trusted Signing: CodeSign SHA256 of '$toBeSigned' failed."
         exit 1;
     }
 }

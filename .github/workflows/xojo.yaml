@@ -46,9 +46,13 @@ on:
         required: true
       MACOS_NOTARIZATION_APPSPECIFIC_PASSWORD:
         required: true
-      WINDOWS_CODESIGN_CERTIFICATE:
+      WINDOWS_CODESIGN_AZURE_TENANT_ID:
         required: true
-      WINDOWS_CODESIGN_CERTIFICATE_PASSWORD:
+      WINDOWS_CODESIGN_AZURE_CLIENT_ID:
+        required: true
+      WINDOWS_CODESIGN_AZURE_CLIENT_SECRET:
+        required: true
+      WINDOWS_CODESIGN_ACS_JSON:
         required: true
     outputs:
       buildmac-xojobuilds-folder:
@@ -265,10 +269,14 @@ jobs:
     needs: [build, postbuild]
     if: ${{ inputs.build-windows-x86-32bit == true || inputs.build-windows-x86-64bit == true }}
     env:
-      SIGNTOOL_EXE: C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe
-      SIGNTOOL_EXE_CMD: C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool.exe
-      CERTIFICATE_PFX: certificate\certificate.pfx
-      TIMESTAMP_SERVER: http://timestamp.digicert.com
+      SIGNTOOL_EXE: C:/Program Files (x86)/Windows Kits/10/bin/10.0.22000.0/x64/signtool.exe
+      SIGNTOOL_EXE_CMD: C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64\signtool.exe
+      AZURE_TENANT_ID: ${{ secrets.WINDOWS_CODESIGN_AZURE_TENANT_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.WINDOWS_CODESIGN_AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.WINDOWS_CODESIGN_AZURE_CLIENT_SECRET }}
+      ACS_DLIB: ${{ github.workspace }}\.azure-trusted-signing\bin\x64\Azure.CodeSigning.Dlib.dll
+      ACS_JSON: ${{ github.workspace }}\.azure-trusted-signing\acs.json
+      TIMESTAMP_SERVER: http://timestamp.acs.microsoft.com
     outputs:
       artifact-id-XojoBuilds-TargetWindows-Processed-x86-32bit: ${{ steps.upload-xojo-builds-processed-windows-x86-32bit.outputs.artifact-id }}
       artifact-id-XojoBuilds-TargetWindows-Processed-x86-64bit: ${{ steps.upload-xojo-builds-processed-windows-x86-64bit.outputs.artifact-id }}
@@ -283,17 +291,18 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: XojoBuilds-TargetWindows-x86-64bit
-      - name: Create Code Signing Certificate
+      - name: Setup Azure Trusted Signing
         shell: powershell
         run: |
-          New-Item -ItemType directory -Path certificate
-          Set-Content -Path certificate\certificate.txt -Value '${{ secrets.WINDOWS_CODESIGN_CERTIFICATE }}'
-          certutil -decode certificate\certificate.txt ${{ env.CERTIFICATE_PFX }}
+          New-Item -ItemType directory -Path .\.azure-trusted-signing
+          Set-Content -Path ${{ env.ACS_JSON }} -Value '${{ secrets.WINDOWS_CODESIGN_ACS_JSON }}'
+          Invoke-WebRequest https://www.nuget.org/api/v2/package/Microsoft.Trusted.Signing.Client/1.0.76 -OutFile .\.azure-trusted-signing\microsoft_trustedsigningclient.zip
+          Expand-Archive .\.azure-trusted-signing\microsoft_trustedsigningclient.zip -DestinationPath .\.azure-trusted-signing
       - name: Code Sign 32Bit Executable and DLLs
         if: ${{ inputs.build-windows-x86-32bit == true }}
         shell: powershell
         run: |
-          & "${{ env.BUILD_WINDOWS_X86_32BIT_CODESIGNSCRIPT }}" "${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}"
+          & "${{ env.BUILD_WINDOWS_X86_32BIT_CODESIGNSCRIPT }}"
       - name: Create ZIP of 32Bit Executable
         if: ${{ inputs.build-windows-x86-32bit == true }}
         shell: powershell
@@ -303,12 +312,12 @@ jobs:
         if: ${{ inputs.build-windows-x86-32bit == true }}
         shell: powershell
         run: |
-          & "${env:ProgramFiles(x86)}/Inno Setup 6/iscc.exe" "/SCodeSignSHA1=${{ env.SIGNTOOL_EXE_CMD }} sign /f `"${{ github.workspace }}\${{ env.CERTIFICATE_PFX }}`" /p `"${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}`" /fd sha1 /t ${{ env.TIMESTAMP_SERVER }} /v `$f" "/SCodeSignSHA256=${{ env.SIGNTOOL_EXE_CMD }} sign /as /f `"${{ github.workspace }}\${{ env.CERTIFICATE_PFX }}`" /p `"${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}`" /fd sha256 /tr ${{ env.TIMESTAMP_SERVER }} /td sha256 /v `$f" /O"${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}" /Dsourcepath="${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}\${{ env.BUILD_WINDOWS_APP_FOLDER_NAME }}" "${{ github.workspace }}\_build\windows\innosetup_x86-32bit.iss"
+          & "${env:ProgramFiles(x86)}/Inno Setup 6/iscc.exe" "/SCodeSignSHA256=${{ env.SIGNTOOL_EXE_CMD }} sign /fd sha256 /tr ${{ env.TIMESTAMP_SERVER }} /td sha256 /v /dlib ${{ env.ACS_DLIB }} /dmdf ${{ env.ACS_JSON }} `$f" /O"${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}" /Dsourcepath="${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}\${{ env.BUILD_WINDOWS_APP_FOLDER_NAME }}" "${{ github.workspace }}\_build\windows\innosetup_x86-32bit.iss"
       - name: Code Sign 64Bit Executable and DLLs
         if: ${{ inputs.build-windows-x86-64bit == true }}
         shell: powershell
         run: |
-          & "${{ env.BUILD_WINDOWS_X86_64BIT_CODESIGNSCRIPT }}" "${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}"
+          & "${{ env.BUILD_WINDOWS_X86_64BIT_CODESIGNSCRIPT }}"
       - name: Create ZIP of 64Bit Executable
         if: ${{ inputs.build-windows-x86-64bit == true }}
         shell: powershell
@@ -318,7 +327,7 @@ jobs:
         if: ${{ inputs.build-windows-x86-64bit == true }}
         shell: powershell
         run: |
-          & "${env:ProgramFiles(x86)}/Inno Setup 6/iscc.exe" "/SCodeSignSHA1=${{ env.SIGNTOOL_EXE_CMD }} sign /f `"${{ github.workspace }}\${{ env.CERTIFICATE_PFX }}`" /p `"${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}`" /fd sha1 /t ${{ env.TIMESTAMP_SERVER }} /v `$f" "/SCodeSignSHA256=${{ env.SIGNTOOL_EXE_CMD }} sign /as /f `"${{ github.workspace }}\${{ env.CERTIFICATE_PFX }}`" /p `"${{ secrets.WINDOWS_CODESIGN_CERTIFICATE_PASSWORD }}`" /fd sha256 /tr ${{ env.TIMESTAMP_SERVER }} /td sha256 /v `$f" /O"${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}" /Dsourcepath="${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}\${{ env.BUILD_WINDOWS_APP_FOLDER_NAME }}" "${{ github.workspace }}\_build\windows\innosetup_x86-64bit.iss"
+          & "${env:ProgramFiles(x86)}/Inno Setup 6/iscc.exe" "/SCodeSignSHA256=${{ env.SIGNTOOL_EXE_CMD }} sign /fd sha256 /tr ${{ env.TIMESTAMP_SERVER }} /td sha256 /v /dlib ${{ env.ACS_DLIB }} /dmdf ${{ env.ACS_JSON }} `$f" /O"${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}" /Dsourcepath="${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}\${{ env.BUILD_WINDOWS_APP_FOLDER_NAME }}" "${{ github.workspace }}\_build\windows\innosetup_x86-64bit.iss"
       - name: Upload Xojo Builds for Windows x86 32Bit
         id: upload-xojo-builds-processed-windows-x86-32bit
         uses: actions/upload-artifact@v4
