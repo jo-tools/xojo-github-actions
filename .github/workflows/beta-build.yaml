@@ -40,6 +40,7 @@ jobs:
     with:
       build-windows-x86-32bit: true
       build-windows-x86-64bit: true
+      build-windows-arm-64bit: true
       build-linux-x86-32bit: true
       build-linux-x86-64bit: true
       build-macos-universal: true

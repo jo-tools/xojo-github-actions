@@ -2,7 +2,7 @@
 #define csExeName "Xojo GitHub Actions.exe"
 #define csAppPublisher "jo-tools.ch"
 #define csAppPublisherURL "https://www.jo-tools.ch/"
-#define csOutputBaseFilename "Setup_XojoGitHubActions_Windows_x86-32bit"
+#define csOutputBaseFilename "Setup_XojoGitHubActions_Windows_ARM-64bit"
 
 #define ApplicationVersion	GetFileProductVersion(AddBackslash(SourcePath) + csExeName)
 
@@ -56,7 +56,8 @@ ChangesAssociations=yes
 ; Require Windows 8.1 with Update 1
 MinVersion=6.3.9600
 
-ArchitecturesAllowed=not arm64
+ArchitecturesInstallIn64BitMode=arm64
+ArchitecturesAllowed=arm64
 
 Signtool=CodeSignSHA256
 SignedUninstaller=yes

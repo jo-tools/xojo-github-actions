@@ -11,6 +11,10 @@ on:
         required: false
         type: boolean
         default: false
+      build-windows-arm-64bit:
+        required: false
+        type: boolean
+        default: false
       build-linux-x86-32bit:
         required: false
         type: boolean
@@ -89,6 +93,16 @@ on:
         value: ${{ jobs.publish-artifacts.outputs.build-windows-x86-64bit-setup-name }}
       build-windows-x86-64bit-setup-asset:
         value: ${{ jobs.publish-artifacts.outputs.build-windows-x86-64bit-setup-asset }}
+      build-windows-arm-64bit:
+        value: ${{ jobs.publish-artifacts.outputs.build-windows-arm-64bit }}
+      build-windows-arm-64bit-zip-name:
+        value: ${{ jobs.publish-artifacts.outputs.build-windows-arm-64bit-zip-name }}
+      build-windows-arm-64bit-zip-asset:
+        value: ${{ jobs.publish-artifacts.outputs.build-windows-arm-64bit-zip-asset }}
+      build-windows-arm-64bit-setup-name:
+        value: ${{ jobs.publish-artifacts.outputs.build-windows-arm-64bit-setup-name }}
+      build-windows-arm-64bit-setup-asset:
+        value: ${{ jobs.publish-artifacts.outputs.build-windows-arm-64bit-setup-asset }}
       build-macos-universal:
         value: ${{ jobs.publish-artifacts.outputs.build-macos-universal }}
       build-macos-universal-dmg-name:
@@ -112,6 +126,7 @@ env:
   FOLDER_BUILDS: Builds - Xojo-GitHub-Actions
   FOLDER_BUILDS_WINDOWS_X86_32BIT: Windows
   FOLDER_BUILDS_WINDOWS_X86_64BIT: Windows 64 bit
+  FOLDER_BUILDS_WINDOWS_ARM_64BIT: Windows ARM 64 bit
   FOLDER_BUILDS_LINUX_X86_32BIT: Linux
   FOLDER_BUILDS_LINUX_X86_64BIT: Linux 64 bit
   FOLDER_BUILDS_MACOS_UNIVERSAL: macOS Universal
@@ -125,12 +140,16 @@ env:
   BUILD_WINDOWS_APP_FOLDER_NAME: Xojo GitHub Actions
   BUILD_WINDOWS_X86_32BIT_ZIP_NAME: XojoGitHubActions_Windows_x86-32bit.zip
   BUILD_WINDOWS_X86_64BIT_ZIP_NAME: XojoGitHubActions_Windows_x86-64bit.zip
+  BUILD_WINDOWS_ARM_64BIT_ZIP_NAME: XojoGitHubActions_Windows_ARM-64bit.zip
   BUILD_WINDOWS_X86_32BIT_CODESIGNSCRIPT: _build/windows/codesign_x86-32bit.ps1
   BUILD_WINDOWS_X86_64BIT_CODESIGNSCRIPT: _build/windows/codesign_x86-64bit.ps1
+  BUILD_WINDOWS_ARM_64BIT_CODESIGNSCRIPT: _build/windows/codesign_ARM-64bit.ps1
   BUILD_WINDOWS_X86_32BIT_INNOSETUPSCRIPT: _build/windows/innosetup_x86-32bit.iss
   BUILD_WINDOWS_X86_64BIT_INNOSETUPSCRIPT: _build/windows/innosetup_x86-64bit.iss
+  BUILD_WINDOWS_ARM_64BIT_INNOSETUPSCRIPT: _build/windows/innosetup_arm-64bit.iss
   BUILD_WINDOWS_X86_32BIT_SETUP_NAME: Setup_XojoGitHubActions_Windows_x86-32bit.exe
   BUILD_WINDOWS_X86_64BIT_SETUP_NAME: Setup_XojoGitHubActions_Windows_x86-64bit.exe
+  BUILD_WINDOWS_ARM_64BIT_SETUP_NAME: Setup_XojoGitHubActions_Windows_ARM-64bit.exe
 
 jobs:
   build:
@@ -162,6 +181,11 @@ jobs:
         run: |
           sleep ${{ env.XOJO_IDE_COMMUNICATOR_SLEEP }}
           ${{ env.XOJO_IDE_COMMUNICATOR }} -x ${{ env.XOJO_IPCPATH }} -i "Print BuildApp(19)"
+      - name: IDE Communicator - Build Windows ARM 64Bit
+        if: ${{ inputs.build-windows-arm-64bit == true }}
+        run: |
+          sleep ${{ env.XOJO_IDE_COMMUNICATOR_SLEEP }}
+          ${{ env.XOJO_IDE_COMMUNICATOR }} -x ${{ env.XOJO_IPCPATH }} -i "Print BuildApp(25)"
       - name: IDE Communicator - Build Linux x86 32Bit
         if: ${{ inputs.build-linux-x86-32bit == true }}
         run: |
@@ -189,6 +213,7 @@ jobs:
     outputs:
       artifact-id-XojoBuilds-TargetWindows-x86-32bit: ${{ steps.upload-xojo-builds-windows-x86-32bit.outputs.artifact-id }}
       artifact-id-XojoBuilds-TargetWindows-x86-64bit: ${{ steps.upload-xojo-builds-windows-x86-64bit.outputs.artifact-id }}
+      artifact-id-XojoBuilds-TargetWindows-arm-64bit: ${{ steps.upload-xojo-builds-windows-arm-64bit.outputs.artifact-id }}
     steps:
       - name: Post Build - Linux x86 32Bit
         if: ${{ inputs.build-linux-x86-32bit == true }}
@@ -263,11 +288,23 @@ jobs:
             ${{ env.BUILD_WINDOWS_X86_64BIT_INNOSETUPSCRIPT }}
             ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}
           if-no-files-found: error
+      - name: Upload Xojo Builds for Windows ARM 64Bit
+        id: upload-xojo-builds-windows-arm-64bit
+        uses: actions/upload-artifact@v4
+        if: ${{ inputs.build-windows-arm-64bit == true }}
+        with:
+          name: XojoBuilds-TargetWindows-arm-64bit
+          retention-days: 1
+          path: |
+            ${{ env.BUILD_WINDOWS_ARM_64BIT_CODESIGNSCRIPT }}
+            ${{ env.BUILD_WINDOWS_ARM_64BIT_INNOSETUPSCRIPT }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_ARM_64BIT }}
+          if-no-files-found: error
   postbuild-windows:
     name: Post Build Windows
     runs-on: windows-latest
     needs: [build, postbuild]
-    if: ${{ inputs.build-windows-x86-32bit == true || inputs.build-windows-x86-64bit == true }}
+    if: ${{ inputs.build-windows-x86-32bit == true || inputs.build-windows-x86-64bit == true || inputs.build-windows-arm-64bit == true }}
     env:
       SIGNTOOL_EXE: C:/Program Files (x86)/Windows Kits/10/bin/10.0.22000.0/x64/signtool.exe
       SIGNTOOL_EXE_CMD: C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64\signtool.exe
@@ -280,6 +317,7 @@ jobs:
     outputs:
       artifact-id-XojoBuilds-TargetWindows-Processed-x86-32bit: ${{ steps.upload-xojo-builds-processed-windows-x86-32bit.outputs.artifact-id }}
       artifact-id-XojoBuilds-TargetWindows-Processed-x86-64bit: ${{ steps.upload-xojo-builds-processed-windows-x86-64bit.outputs.artifact-id }}
+      artifact-id-XojoBuilds-TargetWindows-Processed-arm-64bit: ${{ steps.upload-xojo-builds-processed-windows-arm-64bit.outputs.artifact-id }}
     steps:
       - name: Download Xojo Builds for TargetWindows x86 32Bit
         if: ${{ inputs.build-windows-x86-32bit == true }}
@@ -291,6 +329,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: XojoBuilds-TargetWindows-x86-64bit
+      - name: Download Xojo Builds for TargetWindows ARM 64Bit
+        if: ${{ inputs.build-windows-arm-64bit == true }}
+        uses: actions/download-artifact@v4
+        with:
+          name: XojoBuilds-TargetWindows-arm-64bit
       - name: Setup Azure Trusted Signing
         shell: powershell
         run: |
@@ -298,36 +341,51 @@ jobs:
           Set-Content -Path ${{ env.ACS_JSON }} -Value '${{ secrets.WINDOWS_CODESIGN_ACS_JSON }}'
           Invoke-WebRequest https://www.nuget.org/api/v2/package/Microsoft.Trusted.Signing.Client/1.0.76 -OutFile .\.azure-trusted-signing\microsoft_trustedsigningclient.zip
           Expand-Archive .\.azure-trusted-signing\microsoft_trustedsigningclient.zip -DestinationPath .\.azure-trusted-signing
-      - name: Code Sign 32Bit Executable and DLLs
+      - name: Code Sign x86 32Bit Executable and DLLs
         if: ${{ inputs.build-windows-x86-32bit == true }}
         shell: powershell
         run: |
           & "${{ env.BUILD_WINDOWS_X86_32BIT_CODESIGNSCRIPT }}"
-      - name: Create ZIP of 32Bit Executable
+      - name: Create ZIP of x86 32Bit Executable
         if: ${{ inputs.build-windows-x86-32bit == true }}
         shell: powershell
         run: |
           Compress-Archive -Path "${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}\${{ env.BUILD_WINDOWS_APP_FOLDER_NAME }}" -DestinationPath "${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}\${{ env.BUILD_WINDOWS_X86_32BIT_ZIP_NAME }}"
-      - name: Create Installer of 32Bit Executable
+      - name: Create Installer of x86 32Bit Executable
         if: ${{ inputs.build-windows-x86-32bit == true }}
         shell: powershell
         run: |
           & "${env:ProgramFiles(x86)}/Inno Setup 6/iscc.exe" "/SCodeSignSHA256=${{ env.SIGNTOOL_EXE_CMD }} sign /fd sha256 /tr ${{ env.TIMESTAMP_SERVER }} /td sha256 /v /dlib ${{ env.ACS_DLIB }} /dmdf ${{ env.ACS_JSON }} `$f" /O"${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}" /Dsourcepath="${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}\${{ env.BUILD_WINDOWS_APP_FOLDER_NAME }}" "${{ github.workspace }}\_build\windows\innosetup_x86-32bit.iss"
-      - name: Code Sign 64Bit Executable and DLLs
+      - name: Code Sign x86 64Bit Executable and DLLs
         if: ${{ inputs.build-windows-x86-64bit == true }}
         shell: powershell
         run: |
           & "${{ env.BUILD_WINDOWS_X86_64BIT_CODESIGNSCRIPT }}"
-      - name: Create ZIP of 64Bit Executable
+      - name: Create ZIP of x86 64Bit Executable
         if: ${{ inputs.build-windows-x86-64bit == true }}
         shell: powershell
         run: |
           Compress-Archive -Path "${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}\${{ env.BUILD_WINDOWS_APP_FOLDER_NAME }}" -DestinationPath "${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}\${{ env.BUILD_WINDOWS_X86_64BIT_ZIP_NAME }}"
-      - name: Create Installer of 64Bit Executable
+      - name: Create Installer of x86 64Bit Executable
         if: ${{ inputs.build-windows-x86-64bit == true }}
         shell: powershell
         run: |
           & "${env:ProgramFiles(x86)}/Inno Setup 6/iscc.exe" "/SCodeSignSHA256=${{ env.SIGNTOOL_EXE_CMD }} sign /fd sha256 /tr ${{ env.TIMESTAMP_SERVER }} /td sha256 /v /dlib ${{ env.ACS_DLIB }} /dmdf ${{ env.ACS_JSON }} `$f" /O"${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}" /Dsourcepath="${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}\${{ env.BUILD_WINDOWS_APP_FOLDER_NAME }}" "${{ github.workspace }}\_build\windows\innosetup_x86-64bit.iss"
+      - name: Code Sign ARM 64Bit Executable and DLLs
+        if: ${{ inputs.build-windows-arm-64bit == true }}
+        shell: powershell
+        run: |
+          & "${{ env.BUILD_WINDOWS_ARM_64BIT_CODESIGNSCRIPT }}"
+      - name: Create ZIP of ARM 64Bit Executable
+        if: ${{ inputs.build-windows-arm-64bit == true }}
+        shell: powershell
+        run: |
+          Compress-Archive -Path "${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_ARM_64BIT }}\${{ env.BUILD_WINDOWS_APP_FOLDER_NAME }}" -DestinationPath "${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_ARM_64BIT }}\${{ env.BUILD_WINDOWS_ARM_64BIT_ZIP_NAME }}"
+      - name: Create Installer of ARM 64Bit Executable
+        if: ${{ inputs.build-windows-arm-64bit == true }}
+        shell: powershell
+        run: |
+          & "${env:ProgramFiles(x86)}/Inno Setup 6/iscc.exe" "/SCodeSignSHA256=${{ env.SIGNTOOL_EXE_CMD }} sign /fd sha256 /tr ${{ env.TIMESTAMP_SERVER }} /td sha256 /v /dlib ${{ env.ACS_DLIB }} /dmdf ${{ env.ACS_JSON }} `$f" /O"${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_ARM_64BIT }}" /Dsourcepath="${{ github.workspace }}\${{ env.FOLDER_BUILDS }}\${{ env.FOLDER_BUILDS_WINDOWS_ARM_64BIT }}\${{ env.BUILD_WINDOWS_APP_FOLDER_NAME }}" "${{ github.workspace }}\_build\windows\innosetup_arm-64bit.iss"
       - name: Upload Xojo Builds for Windows x86 32Bit
         id: upload-xojo-builds-processed-windows-x86-32bit
         uses: actions/upload-artifact@v4
@@ -349,6 +407,17 @@ jobs:
           path: |
             ${{ env.BUILD_WINDOWS_X86_64BIT_INNOSETUPSCRIPT }}
             ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}
+          if-no-files-found: error
+      - name: Upload Xojo Builds for Windows ARM 64Bit
+        id: upload-xojo-builds-processed-windows-arm-64bit
+        uses: actions/upload-artifact@v4
+        if: ${{ inputs.build-windows-arm-64bit == true }}
+        with:
+          name: XojoBuilds-TargetWindows-Processed-arm-64bit
+          retention-days: 1
+          path: |
+            ${{ env.BUILD_WINDOWS_ARM_64BIT_INNOSETUPSCRIPT }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_ARM_64BIT }}
           if-no-files-found: error
 # Note: This step is set to run always. That's because if Windows is not being built, the above job 'postbuild-windows'
 #       won't be executed (on a virtual windows machine). Conditional 'needs' are not available. That's why we're going
@@ -376,6 +445,11 @@ jobs:
       build-windows-x86-64bit-zip-asset: ${{ steps.check-build-output-windows-x86-64bit.outputs.build-windows-x86-64bit-zip-asset }}
       build-windows-x86-64bit-setup-name: ${{ steps.check-build-output-windows-x86-64bit.outputs.build-windows-x86-64bit-setup-name }}
       build-windows-x86-64bit-setup-asset: ${{ steps.check-build-output-windows-x86-64bit.outputs.build-windows-x86-64bit-setup-asset }}
+      build-windows-arm-64bit: ${{ steps.check-build-output-windows-arm-64bit.outputs.build-windows-arm-64bit }}
+      build-windows-arm-64bit-zip-name: ${{ steps.check-build-output-windows-arm-64bit.outputs.build-windows-arm-64bit-zip-name }}
+      build-windows-arm-64bit-zip-asset: ${{ steps.check-build-output-windows-arm-64bit.outputs.build-windows-arm-64bit-zip-asset }}
+      build-windows-arm-64bit-setup-name: ${{ steps.check-build-output-windows-arm-64bit.outputs.build-windows-arm-64bit-setup-name }}
+      build-windows-arm-64bit-setup-asset: ${{ steps.check-build-output-windows-arm-64bit.outputs.build-windows-arm-64bit-setup-asset }}
       build-macos-universal: ${{ steps.check-build-output-macos-universal.outputs.build-macos-universal }}
       build-macos-universal-dmg-name: ${{ steps.check-build-output-macos-universal.outputs.build-macos-universal-dmg-name }}
       build-macos-universal-dmg-asset: ${{ steps.check-build-output-macos-universal.outputs.build-macos-universal-dmg-asset }}
@@ -392,6 +466,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: XojoBuilds-TargetWindows-Processed-x86-64bit
+      - name: Download Xojo Builds for TargetWindows ARM 64Bit
+        if: ${{ inputs.build-windows-arm-64bit == true }}
+        uses: actions/download-artifact@v4
+        with:
+          name: XojoBuilds-TargetWindows-Processed-arm-64bit
       - name: Check Buildmac Xojo Builds Folder
         id: check-build-output-buildmac-xojobuilds-folder
         run: |
@@ -449,6 +528,21 @@ jobs:
           echo "build-windows-x86-64bit-zip-asset=${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_ZIP_NAME }}" >> $GITHUB_OUTPUT
           echo "build-windows-x86-64bit-setup-name=${{ env.BUILD_WINDOWS_X86_64BIT_SETUP_NAME }}" >> $GITHUB_OUTPUT
           echo "build-windows-x86-64bit-setup-asset=${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_SETUP_NAME }}" >> $GITHUB_OUTPUT
+      - name: Check Build Output - Windows ARM 64Bit
+        id: check-build-output-windows-arm-64bit
+        if: ${{ inputs.build-windows-arm-64bit == true }}
+        run: |
+          if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_ARM_64BIT }}/${{ env.BUILD_WINDOWS_ARM_64BIT_ZIP_NAME }}" ]; then
+            exit 1
+          fi
+          if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_ARM_64BIT }}/${{ env.BUILD_WINDOWS_ARM_64BIT_SETUP_NAME }}" ]; then
+            exit 1
+          fi
+          echo "build-windows-arm-64bit=done" >> $GITHUB_OUTPUT
+          echo "build-windows-arm-64bit-zip-name=${{ env.BUILD_WINDOWS_ARM_64BIT_ZIP_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-windows-arm-64bit-zip-asset=${{ env.FOLDER_BUILDS_WINDOWS_ARM_64BIT }}/${{ env.BUILD_WINDOWS_ARM_64BIT_ZIP_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-windows-arm-64bit-setup-name=${{ env.BUILD_WINDOWS_ARM_64BIT_SETUP_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-windows-arm-64bit-setup-asset=${{ env.FOLDER_BUILDS_WINDOWS_ARM_64BIT }}/${{ env.BUILD_WINDOWS_ARM_64BIT_SETUP_NAME }}" >> $GITHUB_OUTPUT
       - name: Check Build Output - macOS Universal
         id: check-build-output-macos-universal
         if: ${{ inputs.build-macos-universal == true }}
@@ -477,6 +571,8 @@ jobs:
             ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}/${{ env.BUILD_WINDOWS_X86_32BIT_SETUP_NAME }}
             ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_ZIP_NAME }}
             ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_SETUP_NAME }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_ARM_64BIT }}/${{ env.BUILD_WINDOWS_ARM_64BIT_ZIP_NAME }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_ARM_64BIT }}/${{ env.BUILD_WINDOWS_ARM_64BIT_SETUP_NAME }}
             ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_DMG_NAME }}
             ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_MACOS_UNIVERSAL }}/${{ env.BUILD_MACOS_UNIVERSAL_ZIP_NAME }}
           if-no-files-found: error
@@ -509,4 +605,19 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               artifact_id: ${{ needs.postbuild-windows.outputs.artifact-id-XojoBuilds-TargetWindows-Processed-x86-64bit }}
+            });
+      - name: Delete temporary Artifacts - Windows ARM 64Bit
+        if: ${{ inputs.build-windows-arm-64bit == true }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.actions.deleteArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: ${{ needs.postbuild.outputs.artifact-id-XojoBuilds-TargetWindows-arm-64bit }}
+            });
+            github.rest.actions.deleteArtifact({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              artifact_id: ${{ needs.postbuild-windows.outputs.artifact-id-XojoBuilds-TargetWindows-Processed-arm-64bit }}
             });

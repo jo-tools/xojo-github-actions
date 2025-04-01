@@ -40,9 +40,6 @@ AppPublisherURL={#csAppPublisherURL}
 
 WizardStyle=modern
 
-ArchitecturesInstallIn64BitMode=x64
-ArchitecturesAllowed=x64
-
 DefaultDirName={commonpf}\{#csProductName}
 ;since no icons will be created in "{group}", we don't need the wizard to ask for a group name:
 DefaultGroupName=
@@ -58,6 +55,8 @@ ChangesAssociations=yes
 
 ; Require Windows 8.1 with Update 1
 MinVersion=6.3.9600
+
+ArchitecturesAllowed=x64compatible
 
 Signtool=CodeSignSHA256
 SignedUninstaller=yes
