@@ -2,6 +2,47 @@ name: Beta Build
 
 on:
   workflow_dispatch:
+    inputs:
+      request-build-windows-x86-32bit:
+        description: Build Windows x86 32Bit
+        required: true
+        default: false
+        type: boolean
+      request-build-windows-x86-64bit:
+        description: Build Windows x86 64Bit
+        required: true
+        default: false
+        type: boolean
+      request-build-windows-arm-64bit:
+        description: Build Windows ARM 64Bit
+        required: true
+        default: false
+        type: boolean
+      request-build-linux-x86-32bit:
+        description: Build Linux x86 32Bit
+        required: true
+        default: false
+        type: boolean
+      request-build-linux-x86-64bit:
+        description: Build Linux x86 64Bit
+        required: true
+        default: false
+        type: boolean
+      request-build-linux-arm-32bit:
+        description: Build Linux ARM 32Bit
+        required: true
+        default: false
+        type: boolean
+      request-build-linux-arm-64bit:
+        description: Build Linux ARM 64Bit
+        required: true
+        default: false
+        type: boolean
+      request-build-macos-universal:
+        description: Build macOS Universal
+        required: true
+        default: false
+        type: boolean
   push:
     branches:
       - main
@@ -38,14 +79,14 @@ jobs:
     uses: ./.github/workflows/xojo.yaml
     needs: setup
     with:
-      build-windows-x86-32bit: true
-      build-windows-x86-64bit: true
-      build-windows-arm-64bit: true
-      build-linux-x86-32bit: true
-      build-linux-x86-64bit: true
-      build-linux-arm-32bit: true
-      build-linux-arm-64bit: true
-      build-macos-universal: true
+      build-windows-x86-32bit: ${{ (github.event_name != 'workflow_dispatch' && true) || (github.event_name == 'workflow_dispatch' && inputs.request-build-windows-x86-32bit == true) }}
+      build-windows-x86-64bit: ${{ (github.event_name != 'workflow_dispatch' && true) || (github.event_name == 'workflow_dispatch' && inputs.request-build-windows-x86-64bit == true) }}
+      build-windows-arm-64bit: ${{ (github.event_name != 'workflow_dispatch' && true) || (github.event_name == 'workflow_dispatch' && inputs.request-build-windows-arm-64bit == true) }}
+      build-linux-x86-32bit: ${{ (github.event_name != 'workflow_dispatch' && true) || (github.event_name == 'workflow_dispatch' && inputs.request-build-linux-x86-32bit == true) }}
+      build-linux-x86-64bit: ${{ (github.event_name != 'workflow_dispatch' && true) || (github.event_name == 'workflow_dispatch' && inputs.request-build-linux-x86-64bit == true) }}
+      build-linux-arm-32bit: ${{ (github.event_name != 'workflow_dispatch' && true) || (github.event_name == 'workflow_dispatch' && inputs.request-build-linux-arm-32bit == true) }}
+      build-linux-arm-64bit: ${{ (github.event_name != 'workflow_dispatch' && true) || (github.event_name == 'workflow_dispatch' && inputs.request-build-linux-arm-64bit == true) }}
+      build-macos-universal: ${{ (github.event_name != 'workflow_dispatch' && true) || (github.event_name == 'workflow_dispatch' && inputs.request-build-macos-universal == true) }}
       build-stage-code: beta
       artifacts-retention-days: ${{ needs.setup.outputs.artifacts-retention-days }}
     secrets:
