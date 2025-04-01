@@ -43,6 +43,8 @@ jobs:
       build-windows-arm-64bit: true
       build-linux-x86-32bit: true
       build-linux-x86-64bit: true
+      build-linux-arm-32bit: true
+      build-linux-arm-64bit: true
       build-macos-universal: true
       build-stage-code: beta
       artifacts-retention-days: ${{ needs.setup.outputs.artifacts-retention-days }}

@@ -23,6 +23,14 @@ on:
         required: false
         type: boolean
         default: false
+      build-linux-arm-32bit:
+        required: false
+        type: boolean
+        default: false
+      build-linux-arm-64bit:
+        required: false
+        type: boolean
+        default: false
       build-macos-universal:
         required: false
         type: boolean
@@ -73,6 +81,18 @@ on:
         value: ${{ jobs.publish-artifacts.outputs.build-linux-x86-64bit-tgz-name }}
       build-linux-x86-64bit-tgz-asset:
         value: ${{ jobs.publish-artifacts.outputs.build-linux-x86-64bit-tgz-asset }}
+      build-linux-arm-32bit:
+        value: ${{ jobs.publish-artifacts.outputs.build-linux-arm-32bit }}
+      build-linux-arm-32bit-tgz-name:
+        value: ${{ jobs.publish-artifacts.outputs.build-linux-arm-32bit-tgz-name }}
+      build-linux-arm-32bit-tgz-asset:
+        value: ${{ jobs.publish-artifacts.outputs.build-linux-arm-32bit-tgz-asset }}
+      build-linux-arm-64bit:
+        value: ${{ jobs.publish-artifacts.outputs.build-linux-arm-64bit }}
+      build-linux-arm-64bit-tgz-name:
+        value: ${{ jobs.publish-artifacts.outputs.build-linux-arm-64bit-tgz-name }}
+      build-linux-arm-64bit-tgz-asset:
+        value: ${{ jobs.publish-artifacts.outputs.build-linux-arm-64bit-tgz-asset }}
       build-windows-x86-32bit:
         value: ${{ jobs.publish-artifacts.outputs.build-windows-x86-32bit }}
       build-windows-x86-32bit-zip-name:
@@ -129,11 +149,15 @@ env:
   FOLDER_BUILDS_WINDOWS_ARM_64BIT: Windows ARM 64 bit
   FOLDER_BUILDS_LINUX_X86_32BIT: Linux
   FOLDER_BUILDS_LINUX_X86_64BIT: Linux 64 bit
+  FOLDER_BUILDS_LINUX_ARM_32BIT: Linux ARM
+  FOLDER_BUILDS_LINUX_ARM_64BIT: Linux ARM64
   FOLDER_BUILDS_MACOS_UNIVERSAL: macOS Universal
   BUILD_LINUX_POSTBUILDSCRIPT: _build/linux/postbuild.sh
   BUILD_LINUX_APP_FOLDER_NAME: Xojo GitHub Actions
   BUILD_LINUX_X86_32BIT_TGZ_NAME: XojoGitHubActions_Linux_x86-32bit.tgz
   BUILD_LINUX_X86_64BIT_TGZ_NAME: XojoGitHubActions_Linux_x86-64bit.tgz
+  BUILD_LINUX_ARM_32BIT_TGZ_NAME: XojoGitHubActions_Linux_ARM-32bit.tgz
+  BUILD_LINUX_ARM_64BIT_TGZ_NAME: XojoGitHubActions_Linux_ARM-64bit.tgz
   BUILD_MACOS_UNIVERSAL_POSTBUILD_SHELLSCRIPT: call_xojo2dmg.sh
   BUILD_MACOS_UNIVERSAL_DMG_NAME: Xojo GitHub Actions.dmg
   BUILD_MACOS_UNIVERSAL_ZIP_NAME: Xojo GitHub Actions.zip
@@ -196,6 +220,16 @@ jobs:
         run: |
           sleep ${{ env.XOJO_IDE_COMMUNICATOR_SLEEP }}
           ${{ env.XOJO_IDE_COMMUNICATOR }} -x ${{ env.XOJO_IPCPATH }} -i "Print BuildApp(17)"
+      - name: IDE Communicator - Build Linux ARM 32Bit
+        if: ${{ inputs.build-linux-arm-32bit == true }}
+        run: |
+          sleep ${{ env.XOJO_IDE_COMMUNICATOR_SLEEP }}
+          ${{ env.XOJO_IDE_COMMUNICATOR }} -x ${{ env.XOJO_IPCPATH }} -i "Print BuildApp(18)"
+      - name: IDE Communicator - Build Linux ARM 64Bit
+        if: ${{ inputs.build-linux-arm-64bit == true }}
+        run: |
+          sleep ${{ env.XOJO_IDE_COMMUNICATOR_SLEEP }}
+          ${{ env.XOJO_IDE_COMMUNICATOR }} -x ${{ env.XOJO_IPCPATH }} -i "Print BuildApp(26)"
       - name: IDE Communicator - Build macOS Universal x86 64Bit, ARM 64Bit
         if: ${{ inputs.build-macos-universal == true }}
         run: |
@@ -225,6 +259,16 @@ jobs:
         run: |
           chmod 755 ./${{ env.BUILD_LINUX_POSTBUILDSCRIPT }}
           ./${{ env.BUILD_LINUX_POSTBUILDSCRIPT }} "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_64BIT }}" "${{ env.BUILD_LINUX_APP_FOLDER_NAME }}" "${{ env.BUILD_LINUX_X86_64BIT_TGZ_NAME }}"
+      - name: Post Build - Linux ARM 32Bit
+        if: ${{ inputs.build-linux-arm-32bit == true }}
+        run: |
+          chmod 755 ./${{ env.BUILD_LINUX_POSTBUILDSCRIPT }}
+          ./${{ env.BUILD_LINUX_POSTBUILDSCRIPT }} "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_ARM_32BIT }}" "${{ env.BUILD_LINUX_APP_FOLDER_NAME }}" "${{ env.BUILD_LINUX_ARM_32BIT_TGZ_NAME }}"
+      - name: Post Build - Linux ARM 64Bit
+        if: ${{ inputs.build-linux-arm-64bit == true }}
+        run: |
+          chmod 755 ./${{ env.BUILD_LINUX_POSTBUILDSCRIPT }}
+          ./${{ env.BUILD_LINUX_POSTBUILDSCRIPT }} "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_ARM_64BIT }}" "${{ env.BUILD_LINUX_APP_FOLDER_NAME }}" "${{ env.BUILD_LINUX_ARM_64BIT_TGZ_NAME }}"
       - name: Post Build - macOS Universal x86 64Bit, ARM 64Bit
         if: ${{ inputs.build-macos-universal == true }}
         env:
@@ -435,6 +479,12 @@ jobs:
       build-linux-x86-64bit: ${{ steps.check-build-output-linux-x86-64bit.outputs.build-linux-x86-64bit }}
       build-linux-x86-64bit-tgz-name: ${{ steps.check-build-output-linux-x86-64bit.outputs.build-linux-x86-64bit-tgz-name }}
       build-linux-x86-64bit-tgz-asset: ${{ steps.check-build-output-linux-x86-64bit.outputs.build-linux-x86-64bit-tgz-asset }}
+      build-linux-arm-32bit: ${{ steps.check-build-output-linux-arm-32bit.outputs.build-linux-arm-32bit }}
+      build-linux-arm-32bit-tgz-name: ${{ steps.check-build-output-linux-arm-32bit.outputs.build-linux-arm-32bit-tgz-name }}
+      build-linux-arm-32bit-tgz-asset: ${{ steps.check-build-output-linux-arm-32bit.outputs.build-linux-arm-32bit-tgz-asset }}
+      build-linux-arm-64bit: ${{ steps.check-build-output-linux-arm-64bit.outputs.build-linux-arm-64bit }}
+      build-linux-arm-64bit-tgz-name: ${{ steps.check-build-output-linux-arm-64bit.outputs.build-linux-arm-64bit-tgz-name }}
+      build-linux-arm-64bit-tgz-asset: ${{ steps.check-build-output-linux-arm-64bit.outputs.build-linux-arm-64bit-tgz-asset }}
       build-windows-x86-32bit: ${{ steps.check-build-output-windows-x86-32bit.outputs.build-windows-x86-32bit }}
       build-windows-x86-32bit-zip-name: ${{ steps.check-build-output-windows-x86-32bit.outputs.build-windows-x86-32bit-zip-name }}
       build-windows-x86-32bit-zip-asset: ${{ steps.check-build-output-windows-x86-32bit.outputs.build-windows-x86-32bit-zip-asset }}
@@ -498,6 +548,26 @@ jobs:
           echo "build-linux-x86-64bit=done" >> $GITHUB_OUTPUT
           echo "build-linux-x86-64bit-tgz-name=${{ env.BUILD_LINUX_X86_64BIT_TGZ_NAME }}" >> $GITHUB_OUTPUT
           echo "build-linux-x86-64bit-tgz-asset=${{ env.FOLDER_BUILDS_LINUX_X86_64BIT }}/${{ env.BUILD_LINUX_X86_64BIT_TGZ_NAME }}" >> $GITHUB_OUTPUT
+      - name: Check Build Output - Linux ARM 32Bit
+        id: check-build-output-linux-arm-32bit
+        if: ${{ inputs.build-linux-arm-32bit == true }}
+        run: |
+          if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_ARM_32BIT }}/${{ env.BUILD_LINUX_ARM_32BIT_TGZ_NAME }}" ]; then
+            exit 1
+          fi
+          echo "build-linux-arm-32bit=done" >> $GITHUB_OUTPUT
+          echo "build-linux-arm-32bit-tgz-name=${{ env.BUILD_LINUX_ARM_32BIT_TGZ_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-linux-arm-32bit-tgz-asset=${{ env.FOLDER_BUILDS_LINUX_ARM_32BIT }}/${{ env.BUILD_LINUX_ARM_32BIT_TGZ_NAME }}" >> $GITHUB_OUTPUT
+      - name: Check Build Output - Linux ARM 64Bit
+        id: check-build-output-linux-arm-64bit
+        if: ${{ inputs.build-linux-arm-64bit == true }}
+        run: |
+          if [ ! -f "${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_ARM_64BIT }}/${{ env.BUILD_LINUX_ARM_64BIT_TGZ_NAME }}" ]; then
+            exit 1
+          fi
+          echo "build-linux-arm-64bit=done" >> $GITHUB_OUTPUT
+          echo "build-linux-arm-64bit-tgz-name=${{ env.BUILD_LINUX_ARM_64BIT_TGZ_NAME }}" >> $GITHUB_OUTPUT
+          echo "build-linux-arm-64bit-tgz-asset=${{ env.FOLDER_BUILDS_LINUX_ARM_64BIT }}/${{ env.BUILD_LINUX_ARM_64BIT_TGZ_NAME }}" >> $GITHUB_OUTPUT
       - name: Check Build Output - Windows x86 32Bit
         id: check-build-output-windows-x86-32bit
         if: ${{ inputs.build-windows-x86-32bit == true }}
@@ -567,6 +637,8 @@ jobs:
           path: |
             ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_32BIT }}/${{ env.BUILD_LINUX_X86_32BIT_TGZ_NAME }}
             ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_X86_64BIT }}/${{ env.BUILD_LINUX_X86_64BIT_TGZ_NAME }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_ARM_32BIT }}/${{ env.BUILD_LINUX_ARM_32BIT_TGZ_NAME }}
+            ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_LINUX_ARM_64BIT }}/${{ env.BUILD_LINUX_ARM_64BIT_TGZ_NAME }}
             ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}/${{ env.BUILD_WINDOWS_X86_32BIT_ZIP_NAME }}
             ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_32BIT }}/${{ env.BUILD_WINDOWS_X86_32BIT_SETUP_NAME }}
             ${{ env.FOLDER_BUILDS }}/${{ env.FOLDER_BUILDS_WINDOWS_X86_64BIT }}/${{ env.BUILD_WINDOWS_X86_64BIT_ZIP_NAME }}
