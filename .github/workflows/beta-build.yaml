@@ -6,42 +6,42 @@ on:
       request-build-windows-x86-32bit:
         description: Build Windows x86 32Bit
         required: true
-        default: false
+        default: true
         type: boolean
       request-build-windows-x86-64bit:
         description: Build Windows x86 64Bit
         required: true
-        default: false
+        default: true
         type: boolean
       request-build-windows-arm-64bit:
         description: Build Windows ARM 64Bit
         required: true
-        default: false
+        default: true
         type: boolean
       request-build-linux-x86-32bit:
         description: Build Linux x86 32Bit
         required: true
-        default: false
+        default: true
         type: boolean
       request-build-linux-x86-64bit:
         description: Build Linux x86 64Bit
         required: true
-        default: false
+        default: true
         type: boolean
       request-build-linux-arm-32bit:
         description: Build Linux ARM 32Bit
         required: true
-        default: false
+        default: true
         type: boolean
       request-build-linux-arm-64bit:
         description: Build Linux ARM 64Bit
         required: true
-        default: false
+        default: true
         type: boolean
       request-build-macos-universal:
         description: Build macOS Universal
         required: true
-        default: false
+        default: true
         type: boolean
   push:
     branches:
