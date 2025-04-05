@@ -40,7 +40,10 @@ AppPublisherURL={#csAppPublisherURL}
 
 WizardStyle=modern
 
-DefaultDirName={commonpf}\{#csProductName}
+ArchitecturesInstallIn64BitMode=arm64
+ArchitecturesAllowed=arm64
+
+DefaultDirName={autopf}\{#csProductName}
 ;since no icons will be created in "{group}", we don't need the wizard to ask for a group name:
 DefaultGroupName=
 DisableProgramGroupPage=yes
@@ -56,11 +59,10 @@ ChangesAssociations=yes
 ; Require Windows 8.1 with Update 1
 MinVersion=6.3.9600
 
-ArchitecturesInstallIn64BitMode=arm64
-ArchitecturesAllowed=arm64
-
 Signtool=CodeSignSHA256
 SignedUninstaller=yes
+
+UninstallDisplayIcon={app}\{#csExeName}
 
 
 [Languages]
