@@ -40,10 +40,10 @@ AppPublisherURL={#csAppPublisherURL}
 
 WizardStyle=modern
 
-ArchitecturesInstallIn64BitMode=x64
-ArchitecturesAllowed=x64
+ArchitecturesInstallIn64BitMode=x64compatible
+ArchitecturesAllowed=x64compatible
 
-DefaultDirName={commonpf}\{#csProductName}
+DefaultDirName={autopf}\{#csProductName}
 ;since no icons will be created in "{group}", we don't need the wizard to ask for a group name:
 DefaultGroupName=
 DisableProgramGroupPage=yes
@@ -61,6 +61,8 @@ MinVersion=6.3.9600
 
 Signtool=CodeSignSHA256
 SignedUninstaller=yes
+
+UninstallDisplayIcon={app}\{#csExeName}
 
 
 [Languages]

@@ -2,7 +2,7 @@
 #define csExeName "Xojo GitHub Actions.exe"
 #define csAppPublisher "jo-tools.ch"
 #define csAppPublisherURL "https://www.jo-tools.ch/"
-#define csOutputBaseFilename "Setup_XojoGitHubActions_Windows_x86-32bit"
+#define csOutputBaseFilename "Setup_XojoGitHubActions_Windows_ARM-64bit"
 
 #define ApplicationVersion	GetFileProductVersion(AddBackslash(SourcePath) + csExeName)
 
@@ -40,7 +40,8 @@ AppPublisherURL={#csAppPublisherURL}
 
 WizardStyle=modern
 
-ArchitecturesAllowed=not arm64
+ArchitecturesInstallIn64BitMode=arm64
+ArchitecturesAllowed=arm64
 
 DefaultDirName={autopf}\{#csProductName}
 ;since no icons will be created in "{group}", we don't need the wizard to ask for a group name:

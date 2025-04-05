@@ -70,8 +70,11 @@ jobs:
     with:
       build-windows-x86-32bit: true
       build-windows-x86-64bit: true
+      build-windows-arm-64bit: true
       build-linux-x86-32bit: true
       build-linux-x86-64bit: true
+      build-linux-arm-32bit: true
+      build-linux-arm-64bit: true
       build-macos-universal: true
       build-stage-code: final
       artifacts-retention-days: 7
@@ -126,36 +129,56 @@ jobs:
           done
           echo "Draft Release not found in 10 attempts"
           exit 1
-      - name: Upload Linux 32Bit .tgz release asset
+      - name: Upload Linux x86 32Bit .tgz release asset
         if: ${{ needs.xojo.outputs.build-linux-x86-32bit == 'done'}}
         working-directory: ${{ env.BUILDS_FOLDER }}
         run: |
           gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-linux-x86-32bit-tgz-asset }}#${{ needs.xojo.outputs.build-linux-x86-32bit-tgz-name }}"
-      - name: Upload Linux 64Bit .tgz release asset
+      - name: Upload Linux x86 64Bit .tgz release asset
         if: ${{ needs.xojo.outputs.build-linux-x86-64bit == 'done'}}
         working-directory: ${{ env.BUILDS_FOLDER }}
         run: |
           gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-linux-x86-64bit-tgz-asset }}#${{ needs.xojo.outputs.build-linux-x86-64bit-tgz-name }}"
-      - name: Upload Windows 32Bit .zip release asset
+      - name: Upload Linux ARM 32Bit .tgz release asset
+        if: ${{ needs.xojo.outputs.build-linux-arm-32bit == 'done'}}
+        working-directory: ${{ env.BUILDS_FOLDER }}
+        run: |
+          gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-linux-arm-32bit-tgz-asset }}#${{ needs.xojo.outputs.build-linux-arm-32bit-tgz-name }}"
+      - name: Upload Linux ARM 64Bit .tgz release asset
+        if: ${{ needs.xojo.outputs.build-linux-arm-64bit == 'done'}}
+        working-directory: ${{ env.BUILDS_FOLDER }}
+        run: |
+          gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-linux-arm-64bit-tgz-asset }}#${{ needs.xojo.outputs.build-linux-arm-64bit-tgz-name }}"
+      - name: Upload Windows x86 32Bit .zip release asset
         if: ${{ needs.xojo.outputs.build-windows-x86-32bit == 'done'}}
         working-directory: ${{ env.BUILDS_FOLDER }}
         run: |
           gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-windows-x86-32bit-zip-asset }}#${{ needs.xojo.outputs.build-windows-x86-32bit-zip-name }}"
-      - name: Upload Windows 32Bit setup release asset
+      - name: Upload Windows x86 32Bit setup release asset
         if: ${{ needs.xojo.outputs.build-windows-x86-32bit == 'done'}}
         working-directory: ${{ env.BUILDS_FOLDER }}
         run: |
           gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-windows-x86-32bit-setup-asset }}#${{ needs.xojo.outputs.build-windows-x86-32bit-setup-name }}"
-      - name: Upload Windows 64Bit .zip release asset
+      - name: Upload Windows x86 64Bit .zip release asset
         if: ${{ needs.xojo.outputs.build-windows-x86-64bit == 'done'}}
         working-directory: ${{ env.BUILDS_FOLDER }}
         run: |
           gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-windows-x86-64bit-zip-asset }}#${{ needs.xojo.outputs.build-windows-x86-64bit-zip-name }}"
-      - name: Upload Windows 64Bit setup release asset
+      - name: Upload Windows x86 64Bit setup release asset
         if: ${{ needs.xojo.outputs.build-windows-x86-64bit == 'done'}}
         working-directory: ${{ env.BUILDS_FOLDER }}
         run: |
           gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-windows-x86-64bit-setup-asset }}#${{ needs.xojo.outputs.build-windows-x86-64bit-setup-name }}"
+      - name: Upload Windows ARM 64Bit .zip release asset
+        if: ${{ needs.xojo.outputs.build-windows-arm-64bit == 'done'}}
+        working-directory: ${{ env.BUILDS_FOLDER }}
+        run: |
+          gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-windows-arm-64bit-zip-asset }}#${{ needs.xojo.outputs.build-windows-arm-64bit-zip-name }}"
+      - name: Upload Windows ARM 64Bit setup release asset
+        if: ${{ needs.xojo.outputs.build-windows-arm-64bit == 'done'}}
+        working-directory: ${{ env.BUILDS_FOLDER }}
+        run: |
+          gh release upload ${{ needs.project-version.outputs.version-tag }} "${{ needs.xojo.outputs.build-windows-arm-64bit-setup-asset }}#${{ needs.xojo.outputs.build-windows-arm-64bit-setup-name }}"
       - name: Upload macOS Universal .dmg release asset
         if: ${{ needs.xojo.outputs.build-macos-universal == 'done'}}
         working-directory: ${{ env.BUILDS_FOLDER }}
